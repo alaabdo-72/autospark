@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  emailOrPhone String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  subscription Subscription?
+  bookings     Booking[]
+}
+
+model Subscription {
+  id                 String    @id @default(cuid())
+  userId             String    @unique
+  user               User      @relation(fields: [userId], references: [id])
+  plan               String // payg | monthly | yearly
+  paidWashesRemaining Int      @default(0)
+  paidWashesUsed     Int       @default(0)
+  freeWashesRemaining Int      @default(0)
+  freeWaxRemaining   Int       @default(0)
+  lastPaidWashDate   DateTime?
+  points             Int       @default(0)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+}
+
+model Booking {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  date            String // YYYY-MM-DD
+  time            String // HH:MM
+  bayNumber       Int
+  waxAdded        Boolean   @default(false)
+  washSource      String // payg | paid | free
+  waxSource       String? // paid | free
+  washPrice       Float     @default(0)
+  waxPrice        Float     @default(0)
+  totalPrice      Float     @default(0)
+  status          String    @default("confirmed") // confirmed | checked_in | cancelled | completed
+  estimatedStartAt DateTime
+  waitMinutes     Int
+  checkedInAt     DateTime?
+  createdAt       DateTime  @default(now())
+
+  @@index([date, time])
+}

@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+
+  --color-brand-50: #eff9ff;
+  --color-brand-100: #dcf1ff;
+  --color-brand-200: #b3e5ff;
+  --color-brand-300: #75d3ff;
+  --color-brand-400: #2fbcff;
+  --color-brand-500: #059de6;
+  --color-brand-600: #007ec2;
+  --color-brand-700: #02659e;
+  --color-brand-800: #0a5482;
+  --color-brand-900: #0d466c;
+  --color-brand-950: #092c48;
+
+  --color-spark-400: #ffd23f;
+  --color-spark-500: #ffb703;
+  --color-spark-600: #fb8500;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: #f3f6f9;
+}
+
+#root {
+  min-height: 100dvh;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app-shell {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-shadow: 0 0 40px rgba(13, 70, 108, 0.08);
+}
+
+@media (min-width: 481px) {
+  .app-shell {
+    min-height: calc(100dvh - 32px);
+    margin-block: 16px;
+    border-radius: 28px;
+    overflow: hidden;
+  }
+}
+
+.auth-shell {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  background: linear-gradient(160deg, #0a4f8c 0%, #0d7fb8 45%, #14b3d6 100%);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+@media (min-width: 481px) {
+  .auth-shell {
+    min-height: calc(100dvh - 32px);
+    margin-block: 16px;
+    border-radius: 28px;
+    overflow: hidden;
+  }
+}
+
+.auth-input {
+  width: 100%;
+  padding: 16px 20px;
+  font-size: 1rem;
+  color: #1e293b;
+  outline: none;
+  background: transparent;
+  transition: background-color 150ms ease;
+}
+
+.auth-input::placeholder {
+  color: #94a3b8;
+}
+
+.auth-input:focus {
+  background: var(--color-brand-50);
+}

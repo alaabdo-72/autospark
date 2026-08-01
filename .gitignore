@@ -1,0 +1,6 @@
+# Loose reference images in the project root are not part of the app
+*.png
+*.webp
+*.jpg
+*.jpeg
+!autospark-web/src/assets/*

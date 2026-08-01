@@ -1,0 +1,105 @@
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import AppHeader from '../components/AppHeader'
+import CancelReservationModal from '../components/CancelReservationModal'
+import { useBooking } from '../context/BookingContext'
+import { BASIC_WASH } from '../mock/services'
+import { formatDateLabel, formatClockTime } from '../lib/format'
+import { formatCountdown } from '../lib/countdown'
+import { useNow } from '../hooks/useNow'
+
+export default function LiveTracker() {
+  const navigate = useNavigate()
+  const { booking, bookingLoaded, cancelBooking } = useBooking()
+  const now = useNow(1000)
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false)
+
+  useEffect(() => {
+    if (bookingLoaded && !booking) navigate('/schedule', { replace: true })
+  }, [bookingLoaded, booking, navigate])
+
+  if (!booking) return null
+
+  const { label: countdownLabel, isDue } = formatCountdown(booking.estimatedStartAt, now)
+  const isCheckedIn = booking.status === 'checked_in'
+
+  async function handleConfirmCancel() {
+    await cancelBooking()
+    navigate('/schedule', { replace: true })
+  }
+
+  return (
+    <div className="app-shell">
+      <AppHeader title="Live Queue Tracker" subtitle={`Bay #${booking.bayNumber}`} />
+
+      <div className="flex-1 px-5 pb-4 flex flex-col items-center">
+        <div className="w-full bg-brand-950 rounded-3xl px-6 py-8 text-center text-white">
+          <p className="text-xs uppercase tracking-wide text-brand-200">Time Until Wash</p>
+          <p className={`text-5xl font-bold mt-2 tabular-nums ${isDue ? 'text-spark-400' : 'text-white'}`}>
+            {isDue ? "It's your turn!" : countdownLabel}
+          </p>
+          <p className="text-sm text-brand-200 mt-3">
+            {isDue ? 'Head to the bay now' : `Estimated start at ${formatClockTime(booking.estimatedStartAt)}`}
+          </p>
+        </div>
+
+        <div className="w-full grid grid-cols-2 gap-3 mt-4">
+          <div className="rounded-2xl border border-slate-200 px-4 py-3 text-center">
+            <p className="text-2xl font-bold text-brand-700">{booking.bayNumber}</p>
+            <p className="text-xs text-slate-500 mt-0.5">Bay</p>
+          </div>
+          <div className="rounded-2xl border border-slate-200 px-4 py-3 text-center">
+            <p className="text-2xl font-bold text-brand-700 capitalize">
+              {isCheckedIn ? 'Checked In' : 'Confirmed'}
+            </p>
+            <p className="text-xs text-slate-500 mt-0.5">Status</p>
+          </div>
+        </div>
+
+        <div className="w-full mt-4 rounded-2xl border border-slate-200 px-4 py-3">
+          <div className="flex justify-between text-sm py-1">
+            <span className="text-slate-500">Date</span>
+            <span className="font-semibold text-slate-800">{formatDateLabel(booking.date)}</span>
+          </div>
+          <div className="flex justify-between text-sm py-1">
+            <span className="text-slate-500">Time</span>
+            <span className="font-semibold text-slate-800">{booking.time}</span>
+          </div>
+          <div className="flex justify-between text-sm py-1">
+            <span className="text-slate-500">Wash</span>
+            <span className="font-semibold text-slate-800">
+              {BASIC_WASH.name}
+              {booking.waxAdded && ' + Wax'}
+            </span>
+          </div>
+        </div>
+
+        <div className="w-full mt-auto pt-6 flex flex-col gap-3">
+          <button
+            type="button"
+            onClick={() => navigate('/checkin')}
+            className="w-full rounded-2xl py-3 text-sm font-semibold text-white bg-brand-600 active:bg-brand-700 transition-colors"
+          >
+            {isCheckedIn ? 'View Check-In QR' : "I've Arrived — Check In"}
+          </button>
+          {!isCheckedIn && (
+            <button
+              type="button"
+              onClick={() => setShowCancelConfirm(true)}
+              className="w-full rounded-2xl py-3 text-sm font-semibold text-red-600 bg-red-50 active:bg-red-100 transition-colors"
+            >
+              Cancel Booking
+            </button>
+          )}
+        </div>
+      </div>
+
+      {showCancelConfirm && (
+        <CancelReservationModal
+          onKeep={() => setShowCancelConfirm(false)}
+          onConfirmCancel={handleConfirmCancel}
+        />
+      )}
+    </div>
+  )
+}

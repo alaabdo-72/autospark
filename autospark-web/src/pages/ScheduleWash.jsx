@@ -1,0 +1,161 @@
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import AppHeader from '../components/AppHeader'
+import DateStrip from '../components/DateStrip'
+import TimeChips from '../components/TimeChips'
+import WashInfoCard from '../components/WashInfoCard'
+import WaxOption from '../components/WaxOption'
+import WashesRemainingBanner from '../components/WashesRemainingBanner'
+import BottomBar from '../components/BottomBar'
+import PaymentModal from '../components/PaymentModal'
+import { useBooking } from '../context/BookingContext'
+import { useSubscription } from '../context/SubscriptionContext'
+import { PAYG_WASH_PRICE_JD } from '../mock/services'
+import { formatDateLabel, toLocalISODate } from '../lib/format'
+
+export default function ScheduleWash() {
+  const navigate = useNavigate()
+  const {
+    loading: subscriptionLoading,
+    hasActiveSubscription,
+    plan,
+    paidWashesRemaining,
+    freeWashesRemaining,
+    canBookPaid,
+    canBookFree,
+    nextEligibleAt,
+    waxUnlockedFree,
+  } = useSubscription()
+  const {
+    draft,
+    setDate,
+    setTime,
+    toggleWax,
+    washSource,
+    totalPrice,
+    previewBayNumber,
+    slots,
+    canConfirm,
+    confirmBooking,
+  } = useBooking()
+  const [showPayment, setShowPayment] = useState(false)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    if (!subscriptionLoading && !hasActiveSubscription) navigate('/subscription', { replace: true })
+  }, [subscriptionLoading, hasActiveSubscription, navigate])
+
+  if (subscriptionLoading || !hasActiveSubscription) return null
+
+  async function doConfirm() {
+    setError(null)
+    try {
+      const booking = await confirmBooking()
+      if (booking) navigate('/confirmation')
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  function handlePrimaryAction() {
+    if (totalPrice > 0) {
+      setShowPayment(true)
+    } else {
+      doConfirm()
+    }
+  }
+
+  function handlePaymentSuccess() {
+    setShowPayment(false)
+    doConfirm()
+  }
+
+  const isBlocked = plan !== 'payg' && !canBookPaid && !canBookFree
+
+  if (isBlocked) {
+    const isCadenceBlocked = Boolean(nextEligibleAt)
+    return (
+      <div className="app-shell">
+        <AppHeader title="Schedule a Wash" subtitle="Book your next visit in seconds" />
+        <div className="flex-1 px-6 flex flex-col items-center justify-center text-center">
+          <p className="text-lg font-semibold text-brand-950">
+            {isCadenceBlocked ? 'Not Yet Available' : 'No Washes Remaining'}
+          </p>
+          <p className="text-sm text-slate-500 mt-2 max-w-xs">
+            {isCadenceBlocked
+              ? `Your next wash can be booked on ${formatDateLabel(toLocalISODate(nextEligibleAt))}.`
+              : "You've used all the washes in your current plan. Upgrade or wait for your plan to renew."}
+          </p>
+          <button
+            type="button"
+            onClick={() => navigate('/subscription')}
+            className="mt-6 rounded-2xl py-3 px-6 text-sm font-semibold text-white bg-brand-600 active:bg-brand-700 transition-colors"
+          >
+            View Subscription Plans
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  const bannerStats = []
+  if (plan === 'monthly') bannerStats.push({ value: paidWashesRemaining, label: 'Washes Remaining' })
+  if (plan === 'yearly') {
+    bannerStats.push({ value: paidWashesRemaining, label: 'Paid Washes' })
+    bannerStats.push({ value: freeWashesRemaining, label: 'Free Washes' })
+  }
+
+  let washStatusLabel = 'Included in your subscription'
+  if (plan === 'payg') washStatusLabel = `${PAYG_WASH_PRICE_JD} JD`
+  else if (washSource === 'free') washStatusLabel = 'Using a free wash — included'
+
+  return (
+    <div className="app-shell">
+      <AppHeader title="Schedule a Wash" subtitle="Book your next visit in seconds" />
+
+      <div className="flex-1 pb-4">
+        {bannerStats.length > 0 && (
+          <div className="mt-5">
+            <WashesRemainingBanner stats={bannerStats} />
+          </div>
+        )}
+        <div className="mt-5">
+          <DateStrip value={draft.date} onChange={setDate} />
+        </div>
+        <TimeChips value={draft.time} onChange={setTime} slots={slots} />
+        {previewBayNumber && (
+          <div className="px-5 mt-3">
+            <div className="flex items-center justify-between rounded-2xl bg-brand-50 border border-brand-100 px-4 py-2.5">
+              <span className="text-sm font-semibold text-slate-700">Assigned Bay</span>
+              <span className="text-sm font-bold text-brand-700">Bay {previewBayNumber}</span>
+            </div>
+          </div>
+        )}
+        <WashInfoCard statusLabel={washStatusLabel} />
+        <WaxOption included={waxUnlockedFree} checked={draft.waxAdded} onToggle={toggleWax} />
+
+        {error && (
+          <div className="mx-5 mt-4 rounded-xl bg-red-50 border border-red-100 px-4 py-2.5 text-sm text-red-600">
+            {error}
+          </div>
+        )}
+      </div>
+
+      <BottomBar
+        total={totalPrice}
+        disabled={!canConfirm}
+        label={totalPrice > 0 ? `Pay ${totalPrice} JD` : 'Confirm'}
+        onConfirm={handlePrimaryAction}
+      />
+
+      {showPayment && (
+        <PaymentModal
+          amount={totalPrice}
+          description="Wash booking"
+          onSuccess={handlePaymentSuccess}
+          onCancel={() => setShowPayment(false)}
+        />
+      )}
+    </div>
+  )
+}
