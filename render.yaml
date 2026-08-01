@@ -15,7 +15,6 @@ services:
   - type: web
     name: autospark-web
     env: static
-    plan: free
     rootDir: autospark-web
     buildCommand: npm install && npm run build
     staticPublishPath: dist
