@@ -1,4 +1,13 @@
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000'
+function resolveApiUrl() {
+  // Known production hostname always wins, regardless of whether the
+  // VITE_API_URL build-time env var was actually injected by the host.
+  if (typeof window !== 'undefined' && window.location.hostname === 'autospark-web.onrender.com') {
+    return 'https://autospark-api.onrender.com'
+  }
+  return import.meta.env.VITE_API_URL ?? 'http://localhost:4000'
+}
+
+const API_URL = resolveApiUrl()
 
 const TOKEN_KEY = 'autospark.token'
 
