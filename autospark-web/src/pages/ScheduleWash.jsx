@@ -122,7 +122,7 @@ export default function ScheduleWash() {
         <div className="mt-5">
           <DateStrip value={draft.date} onChange={setDate} />
         </div>
-        <TimeChips value={draft.time} onChange={setTime} slots={slots} />
+        <TimeChips value={draft.time} onChange={setTime} slots={slots} date={draft.date} />
         {previewBayNumber && (
           <div className="px-5 mt-3">
             <div className="flex items-center justify-between rounded-2xl bg-brand-50 border border-brand-100 px-4 py-2.5">

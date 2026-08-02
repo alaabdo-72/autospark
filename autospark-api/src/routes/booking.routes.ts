@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { prisma } from '../db/client'
 import { requireAuth, AuthedRequest } from '../middleware/requireAuth'
 import { PAYG_WASH_PRICE_JD, POINTS_PER_WASH, TIME_SLOTS, WAX_PRICE_JD } from '../config/plans'
-import { computeQueueForSlot, isSlotFull } from '../lib/queue'
+import { computeQueueForSlot, isSlotFull, parseSlotDateTime } from '../lib/queue'
 import { evaluateEligibility, resolveWashSource } from '../lib/subscriptionEligibility'
 import { PlanId } from '../config/plans'
 
@@ -50,6 +50,10 @@ bookingRouter.post('/', async (req: AuthedRequest, res) => {
   const [todayISO, tomorrowISO] = todayAndTomorrow()
   if (date !== todayISO && date !== tomorrowISO) {
     return res.status(400).json({ error: 'Date must be today or tomorrow' })
+  }
+
+  if (parseSlotDateTime(date, time).getTime() < Date.now()) {
+    return res.status(400).json({ error: 'This time slot has already passed' })
   }
 
   const sub = await prisma.subscription.findUnique({ where: { userId: req.userId! } })
