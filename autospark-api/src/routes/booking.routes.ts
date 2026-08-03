@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { prisma } from '../db/client'
 import { requireAuth, AuthedRequest } from '../middleware/requireAuth'
 import { PAYG_WASH_PRICE_JD, POINTS_PER_WASH, TIME_SLOTS, WAX_PRICE_JD } from '../config/plans'
-import { computeQueueForSlot, isSlotFull, parseSlotDateTime } from '../lib/queue'
+import { businessNow, computeQueueForSlot, isSlotFull, parseSlotDateTime } from '../lib/queue'
 import { evaluateEligibility, resolveWashSource } from '../lib/subscriptionEligibility'
 import { PlanId } from '../config/plans'
 
@@ -13,16 +13,17 @@ bookingRouter.use(requireAuth)
 const ACTIVE_STATUSES = ['confirmed', 'checked_in']
 
 function todayAndTomorrow() {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const tomorrow = new Date(today)
-  tomorrow.setDate(today.getDate() + 1)
+  // Uses the business's local calendar day (Jordan), not the server
+  // process's own timezone — see businessNow() for why that distinction
+  // matters (Render's servers run in UTC).
   const toISO = (d: Date) => {
-    const y = d.getFullYear()
-    const m = String(d.getMonth() + 1).padStart(2, '0')
-    const day = String(d.getDate()).padStart(2, '0')
+    const y = d.getUTCFullYear()
+    const m = String(d.getUTCMonth() + 1).padStart(2, '0')
+    const day = String(d.getUTCDate()).padStart(2, '0')
     return `${y}-${m}-${day}`
   }
+  const today = businessNow()
+  const tomorrow = new Date(today.getTime() + 86400000)
   return [toISO(today), toISO(tomorrow)]
 }
 
