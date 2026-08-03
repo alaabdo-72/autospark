@@ -5,6 +5,7 @@ import CancelReservationModal from '../components/CancelReservationModal'
 import { useBooking } from '../context/BookingContext'
 import { BASIC_WASH } from '../mock/services'
 import { formatDateLabel } from '../lib/format'
+import { formatDurationHM } from '../lib/countdown'
 
 export default function WaitingConfirmation() {
   const navigate = useNavigate()
@@ -26,6 +27,8 @@ export default function WaitingConfirmation() {
     navigate('/tracker')
   }
 
+  const { hours, minutes } = formatDurationHM(booking.waitMinutes)
+
   return (
     <div className="app-shell items-center justify-center px-6 py-10 text-center">
       <Logo size={56} />
@@ -34,10 +37,19 @@ export default function WaitingConfirmation() {
 
       <div className="mt-8 flex flex-col items-center">
         <p className="text-xs uppercase tracking-wide text-slate-400">Estimated Waiting Time</p>
-        <p className="text-6xl font-bold text-brand-600 mt-1">
-          {booking.waitMinutes}
-          <span className="text-2xl font-semibold text-brand-400 ml-1">min</span>
-        </p>
+        {hours > 0 ? (
+          <p className="text-6xl font-bold text-brand-600 mt-1">
+            {hours}
+            <span className="text-2xl font-semibold text-brand-400 ml-1 mr-3">hr</span>
+            {minutes}
+            <span className="text-2xl font-semibold text-brand-400 ml-1">min</span>
+          </p>
+        ) : (
+          <p className="text-6xl font-bold text-brand-600 mt-1">
+            {minutes}
+            <span className="text-2xl font-semibold text-brand-400 ml-1">min</span>
+          </p>
+        )}
       </div>
 
       <div className="mt-8 w-full bg-brand-50 rounded-2xl border border-brand-100 px-5 py-4 text-left">
