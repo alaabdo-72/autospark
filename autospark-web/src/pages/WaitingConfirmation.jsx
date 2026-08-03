@@ -6,11 +6,16 @@ import { useBooking } from '../context/BookingContext'
 import { BASIC_WASH } from '../mock/services'
 import { formatDateLabel } from '../lib/format'
 import { formatDurationHM } from '../lib/countdown'
+import { useNow } from '../hooks/useNow'
+
+const CANCEL_CUTOFF_MS = 60 * 60 * 1000
 
 export default function WaitingConfirmation() {
   const navigate = useNavigate()
   const { booking, bookingLoaded, cancelBooking } = useBooking()
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
+  const [error, setError] = useState(null)
+  const now = useNow(1000)
 
   useEffect(() => {
     if (bookingLoaded && !booking) navigate('/schedule', { replace: true })
@@ -19,8 +24,14 @@ export default function WaitingConfirmation() {
   if (!booking) return null
 
   async function handleConfirmCancel() {
-    await cancelBooking()
-    navigate('/schedule', { replace: true })
+    setError(null)
+    try {
+      await cancelBooking()
+      navigate('/schedule', { replace: true })
+    } catch (err) {
+      setShowCancelConfirm(false)
+      setError(err.message)
+    }
   }
 
   function handleTrack() {
@@ -28,6 +39,8 @@ export default function WaitingConfirmation() {
   }
 
   const { hours, minutes } = formatDurationHM(booking.waitMinutes)
+  const remainingMs = new Date(booking.estimatedStartAt).getTime() - now
+  const canCancel = remainingMs >= CANCEL_CUTOFF_MS
 
   return (
     <div className="app-shell items-center justify-center px-6 py-10 text-center">
@@ -74,6 +87,8 @@ export default function WaitingConfirmation() {
         </div>
       </div>
 
+      {error && <p className="text-xs text-red-500 mt-4 max-w-xs">{error}</p>}
+
       <div className="mt-10 w-full flex flex-col gap-3">
         <button
           type="button"
@@ -82,10 +97,16 @@ export default function WaitingConfirmation() {
         >
           Track My Wash
         </button>
+        {!canCancel && (
+          <p className="text-xs text-slate-400 text-center -mb-1">
+            Cancellation closes 60 minutes before your turn
+          </p>
+        )}
         <button
           type="button"
+          disabled={!canCancel}
           onClick={() => setShowCancelConfirm(true)}
-          className="w-full rounded-2xl py-3 text-sm font-semibold text-red-600 bg-red-50 active:bg-red-100 transition-colors"
+          className="w-full rounded-2xl py-3 text-sm font-semibold text-red-600 bg-red-50 disabled:text-slate-400 disabled:bg-slate-100 active:bg-red-100 transition-colors"
         >
           Cancel Booking
         </button>

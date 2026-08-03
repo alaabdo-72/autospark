@@ -9,12 +9,14 @@ import { formatCountdown } from '../lib/countdown'
 import { useNow } from '../hooks/useNow'
 
 const CHECK_IN_WINDOW_MS = 3 * 60 * 1000
+const CANCEL_CUTOFF_MS = 60 * 60 * 1000
 
 export default function LiveTracker() {
   const navigate = useNavigate()
   const { booking, bookingLoaded, cancelBooking } = useBooking()
   const now = useNow(1000)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     if (bookingLoaded && !booking) navigate('/schedule', { replace: true })
@@ -26,10 +28,17 @@ export default function LiveTracker() {
   const isCheckedIn = booking.status === 'checked_in'
   const remainingMs = new Date(booking.estimatedStartAt).getTime() - now
   const canCheckIn = isCheckedIn || remainingMs <= CHECK_IN_WINDOW_MS
+  const canCancel = remainingMs >= CANCEL_CUTOFF_MS
 
   async function handleConfirmCancel() {
-    await cancelBooking()
-    navigate('/schedule', { replace: true })
+    setError(null)
+    try {
+      await cancelBooking()
+      navigate('/schedule', { replace: true })
+    } catch (err) {
+      setShowCancelConfirm(false)
+      setError(err.message)
+    }
   }
 
   return (
@@ -93,14 +102,23 @@ export default function LiveTracker() {
             {isCheckedIn ? 'View Check-In QR' : "I've Arrived — Check In"}
           </button>
           {!isCheckedIn && (
-            <button
-              type="button"
-              onClick={() => setShowCancelConfirm(true)}
-              className="w-full rounded-2xl py-3 text-sm font-semibold text-red-600 bg-red-50 active:bg-red-100 transition-colors"
-            >
-              Cancel Booking
-            </button>
+            <>
+              {!canCancel && (
+                <p className="text-xs text-slate-400 text-center -mb-1">
+                  Cancellation closes 60 minutes before your turn
+                </p>
+              )}
+              <button
+                type="button"
+                disabled={!canCancel}
+                onClick={() => setShowCancelConfirm(true)}
+                className="w-full rounded-2xl py-3 text-sm font-semibold text-red-600 bg-red-50 disabled:text-slate-400 disabled:bg-slate-100 active:bg-red-100 transition-colors"
+              >
+                Cancel Booking
+              </button>
+            </>
           )}
+          {error && <p className="text-xs text-red-500 text-center">{error}</p>}
         </div>
       </div>
 
