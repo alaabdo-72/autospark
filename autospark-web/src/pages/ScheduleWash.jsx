@@ -27,6 +27,8 @@ export default function ScheduleWash() {
     waxUnlockedFree,
   } = useSubscription()
   const {
+    booking,
+    bookingLoaded,
     draft,
     setDate,
     setTime,
@@ -45,7 +47,12 @@ export default function ScheduleWash() {
     if (!subscriptionLoading && !hasActiveSubscription) navigate('/subscription', { replace: true })
   }, [subscriptionLoading, hasActiveSubscription, navigate])
 
+  useEffect(() => {
+    if (bookingLoaded && booking) navigate('/confirmation', { replace: true })
+  }, [bookingLoaded, booking, navigate])
+
   if (subscriptionLoading || !hasActiveSubscription) return null
+  if (!bookingLoaded || booking) return null
 
   async function doConfirm() {
     setError(null)
