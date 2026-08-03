@@ -1,13 +1,18 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AppHeader from '../components/AppHeader'
 import QRCodeImage from '../components/QRCode'
 import { useBooking } from '../context/BookingContext'
 import { formatClockTime } from '../lib/format'
+import { useNow } from '../hooks/useNow'
+
+const CHECK_IN_WINDOW_MS = 3 * 60 * 1000
 
 export default function CheckIn() {
   const navigate = useNavigate()
   const { booking, bookingLoaded, checkInBooking } = useBooking()
+  const now = useNow(1000)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     if (bookingLoaded && !booking) navigate('/schedule', { replace: true })
@@ -16,12 +21,19 @@ export default function CheckIn() {
   if (!booking) return null
 
   const isCheckedIn = booking.status === 'checked_in'
+  const remainingMs = new Date(booking.estimatedStartAt).getTime() - now
+  const canCheckIn = isCheckedIn || remainingMs <= CHECK_IN_WINDOW_MS
   // Stand-in for a server-issued signed/expiring token (spec 9.1); a real
   // backend would mint this per-booking so it can't be replayed or shared.
   const qrValue = `autospark:booking:${booking.id}`
 
-  function handleScan() {
-    checkInBooking()
+  async function handleScan() {
+    setError(null)
+    try {
+      await checkInBooking()
+    } catch (err) {
+      setError(err.message)
+    }
   }
 
   return (
@@ -48,6 +60,13 @@ export default function CheckIn() {
             </p>
             <QRCodeImage value={qrValue} />
             <p className="text-xs text-slate-400 mt-4">Booking #{booking.id.slice(-6)}</p>
+            {!canCheckIn && (
+              <p className="text-xs text-slate-400 mt-4 max-w-xs">
+                Check-in opens 3 minutes before your turn — come back closer to{' '}
+                {formatClockTime(booking.estimatedStartAt)}.
+              </p>
+            )}
+            {error && <p className="text-xs text-red-500 mt-4 max-w-xs">{error}</p>}
           </>
         )}
       </div>
@@ -56,8 +75,9 @@ export default function CheckIn() {
         {!isCheckedIn && (
           <button
             type="button"
+            disabled={!canCheckIn}
             onClick={handleScan}
-            className="w-full rounded-2xl py-3 text-sm font-semibold text-white bg-brand-600 active:bg-brand-700 transition-colors"
+            className="w-full rounded-2xl py-3 text-sm font-semibold text-white bg-brand-600 disabled:bg-slate-300 disabled:text-slate-500 active:bg-brand-700 transition-colors"
           >
             Scan Now
           </button>

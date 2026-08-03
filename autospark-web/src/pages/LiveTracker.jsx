@@ -8,6 +8,8 @@ import { formatDateLabel, formatClockTime } from '../lib/format'
 import { formatCountdown } from '../lib/countdown'
 import { useNow } from '../hooks/useNow'
 
+const CHECK_IN_WINDOW_MS = 3 * 60 * 1000
+
 export default function LiveTracker() {
   const navigate = useNavigate()
   const { booking, bookingLoaded, cancelBooking } = useBooking()
@@ -22,6 +24,8 @@ export default function LiveTracker() {
 
   const { label: countdownLabel, isDue } = formatCountdown(booking.estimatedStartAt, now)
   const isCheckedIn = booking.status === 'checked_in'
+  const remainingMs = new Date(booking.estimatedStartAt).getTime() - now
+  const canCheckIn = isCheckedIn || remainingMs <= CHECK_IN_WINDOW_MS
 
   async function handleConfirmCancel() {
     await cancelBooking()
@@ -75,10 +79,16 @@ export default function LiveTracker() {
         </div>
 
         <div className="w-full mt-auto pt-6 flex flex-col gap-3">
+          {!canCheckIn && (
+            <p className="text-xs text-slate-400 text-center -mb-1">
+              Check-in opens 3 minutes before your turn
+            </p>
+          )}
           <button
             type="button"
+            disabled={!canCheckIn}
             onClick={() => navigate('/checkin')}
-            className="w-full rounded-2xl py-3 text-sm font-semibold text-white bg-brand-600 active:bg-brand-700 transition-colors"
+            className="w-full rounded-2xl py-3 text-sm font-semibold text-white bg-brand-600 disabled:bg-slate-300 disabled:text-slate-500 active:bg-brand-700 transition-colors"
           >
             {isCheckedIn ? 'View Check-In QR' : "I've Arrived — Check In"}
           </button>

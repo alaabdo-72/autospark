@@ -4,6 +4,7 @@ export const ACTIVE_BAYS = 3
 export const CYCLE_MINUTES = 7
 export const BUFFER_SECONDS = 75
 export const POINTS_PER_WASH = 10
+export const CHECK_IN_WINDOW_MINUTES = 3
 
 export const PLAN_IDS = ['payg', 'monthly', 'yearly'] as const
 export type PlanId = (typeof PLAN_IDS)[number]

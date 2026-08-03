@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { z } from 'zod'
 import { prisma } from '../db/client'
 import { requireAuth, AuthedRequest } from '../middleware/requireAuth'
-import { PAYG_WASH_PRICE_JD, POINTS_PER_WASH, TIME_SLOTS, WAX_PRICE_JD } from '../config/plans'
+import { CHECK_IN_WINDOW_MINUTES, PAYG_WASH_PRICE_JD, POINTS_PER_WASH, TIME_SLOTS, WAX_PRICE_JD } from '../config/plans'
 import { businessNow, computeQueueForSlot, isSlotFull, parseSlotDateTime } from '../lib/queue'
 import { evaluateEligibility, resolveWashSource } from '../lib/subscriptionEligibility'
 import { PlanId } from '../config/plans'
@@ -147,6 +147,11 @@ bookingRouter.post('/:id/checkin', async (req: AuthedRequest, res) => {
   }
   if (booking.status !== 'confirmed') {
     return res.status(409).json({ error: 'Booking is not in a checkable-in state' })
+  }
+
+  const remainingMs = booking.estimatedStartAt.getTime() - Date.now()
+  if (remainingMs > CHECK_IN_WINDOW_MINUTES * 60 * 1000) {
+    return res.status(409).json({ error: `Check-in opens ${CHECK_IN_WINDOW_MINUTES} minutes before your turn` })
   }
 
   const updated = await prisma.booking.update({
