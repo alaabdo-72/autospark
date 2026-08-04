@@ -4,6 +4,11 @@ function resolveApiUrl() {
   if (typeof window !== 'undefined' && window.location.hostname === 'autospark-web.onrender.com') {
     return 'https://autospark-api.onrender.com'
   }
+  // Inside the Capacitor native shell there's no localhost:4000 to reach —
+  // point the app at the deployed backend instead.
+  if (typeof window !== 'undefined' && window.Capacitor?.isNativePlatform?.()) {
+    return 'https://autospark-api.onrender.com'
+  }
   return import.meta.env.VITE_API_URL ?? 'http://localhost:4000'
 }
 
