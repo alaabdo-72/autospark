@@ -27,7 +27,7 @@ model Subscription {
   paidWashesUsed     Int       @default(0)
   freeWashesRemaining Int      @default(0)
   freeWaxRemaining   Int       @default(0)
-  lastPaidWashDate   DateTime?
+  lastWashDate       DateTime?
   points             Int       @default(0)
   paygCreditJD       Float     @default(0)
   createdAt          DateTime  @default(now())

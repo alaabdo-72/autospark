@@ -6,11 +6,12 @@ import TimeChips from '../components/TimeChips'
 import WashInfoCard from '../components/WashInfoCard'
 import WaxOption from '../components/WaxOption'
 import WashesRemainingBanner from '../components/WashesRemainingBanner'
+import FreeWashProgress from '../components/FreeWashProgress'
 import BottomBar from '../components/BottomBar'
 import PaymentModal from '../components/PaymentModal'
 import { useBooking } from '../context/BookingContext'
 import { useSubscription } from '../context/SubscriptionContext'
-import { PAYG_WASH_PRICE_JD } from '../mock/services'
+import { PAYG_WASH_PRICE_JD, PLANS } from '../mock/services'
 import { formatDateLabel, toLocalISODate } from '../lib/format'
 
 export default function ScheduleWash() {
@@ -26,6 +27,8 @@ export default function ScheduleWash() {
     nextEligibleAt,
     waxUnlockedFree,
     paygCreditJD,
+    freeWashesUnlocked,
+    paidWashesUntilNextFreeUnlock,
   } = useSubscription()
   const {
     booking,
@@ -130,6 +133,14 @@ export default function ScheduleWash() {
           <div className="mt-5">
             <WashesRemainingBanner stats={bannerStats} />
           </div>
+        )}
+        {plan === 'yearly' && (
+          <FreeWashProgress
+            total={PLANS.yearly.freeWashesIncluded}
+            unlocked={freeWashesUnlocked}
+            used={PLANS.yearly.freeWashesIncluded - freeWashesRemaining}
+            paidWashesUntilNext={paidWashesUntilNextFreeUnlock}
+          />
         )}
         <div className="mt-5">
           <DateStrip value={draft.date} onChange={setDate} />

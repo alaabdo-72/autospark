@@ -6,7 +6,7 @@ export interface SubscriptionLike {
   paidWashesUsed: number
   freeWashesRemaining: number
   freeWaxRemaining: number
-  lastPaidWashDate: Date | null
+  lastWashDate: Date | null
 }
 
 function daysSince(date: Date | null, now: number) {
@@ -22,31 +22,45 @@ export function evaluateEligibility(sub: SubscriptionLike, now = Date.now()) {
   let canBookFree = false
   let nextEligibleAt: Date | null = null
 
+  // A single cooldown applies between any two washes (paid or free) —
+  // there's no separate timer per wash type.
+  const cooldownOk = daysSince(sub.lastWashDate, now) >= config.minDaysBetweenWashes
+
+  // One free wash unlocks for every `freePerkUnlockAfterPaidWashes` paid
+  // washes booked, up to the plan's total free-wash allotment — repeating,
+  // not a one-time threshold.
+  const freeWashesUnlocked =
+    config.freePerkUnlockAfterPaidWashes > 0
+      ? Math.min(
+          Math.floor(sub.paidWashesUsed / config.freePerkUnlockAfterPaidWashes),
+          config.freeWashesIncluded,
+        )
+      : 0
+  const freeWashesUsed = config.freeWashesIncluded - sub.freeWashesRemaining
+  const freeWashAvailable = freeWashesUnlocked > freeWashesUsed
+  const paidWashesUntilNextFreeUnlock =
+    plan === 'yearly' && freeWashesUnlocked < config.freeWashesIncluded
+      ? config.freePerkUnlockAfterPaidWashes - (sub.paidWashesUsed % config.freePerkUnlockAfterPaidWashes)
+      : 0
+
   if (plan === 'payg') {
     canBookPaid = true
   } else if (plan === 'monthly') {
-    const cooldownOk = daysSince(sub.lastPaidWashDate, now) >= config.paidWashCooldownDays
     canBookPaid = sub.paidWashesRemaining > 0 && cooldownOk
-    if (sub.paidWashesRemaining > 0 && !cooldownOk && sub.lastPaidWashDate) {
-      nextEligibleAt = new Date(sub.lastPaidWashDate.getTime() + config.paidWashCooldownDays * 86400000)
-    }
   } else if (plan === 'yearly') {
-    const paidCooldownOk = daysSince(sub.lastPaidWashDate, now) >= config.paidWashCooldownDays
-    canBookPaid = sub.paidWashesRemaining > 0 && paidCooldownOk
+    canBookPaid = sub.paidWashesRemaining > 0 && cooldownOk
+    canBookFree = freeWashAvailable && sub.freeWashesRemaining > 0 && cooldownOk
+  }
 
-    const freeUnlocked = sub.paidWashesUsed >= config.freePerkUnlockAfterPaidWashes
-    const freeCooldownOk = daysSince(sub.lastPaidWashDate, now) >= config.freeWashCooldownAfterPaidDays
-    canBookFree = freeUnlocked && sub.freeWashesRemaining > 0 && freeCooldownOk
-
-    if (sub.paidWashesRemaining > 0 && !paidCooldownOk && sub.lastPaidWashDate) {
-      nextEligibleAt = new Date(sub.lastPaidWashDate.getTime() + config.paidWashCooldownDays * 86400000)
-    }
+  const hasBookableQuota = sub.paidWashesRemaining > 0 || freeWashAvailable
+  if (!cooldownOk && sub.lastWashDate && hasBookableQuota) {
+    nextEligibleAt = new Date(sub.lastWashDate.getTime() + config.minDaysBetweenWashes * 86400000)
   }
 
   const waxUnlockedFree =
     plan === 'yearly' && sub.freeWaxRemaining > 0 && sub.paidWashesUsed >= config.freePerkUnlockAfterPaidWashes
 
-  return { canBookPaid, canBookFree, nextEligibleAt, waxUnlockedFree }
+  return { canBookPaid, canBookFree, nextEligibleAt, waxUnlockedFree, freeWashesUnlocked, paidWashesUntilNextFreeUnlock }
 }
 
 export function resolveWashSource(plan: PlanId, canBookPaid: boolean, canBookFree: boolean): 'payg' | 'paid' | 'free' | null {

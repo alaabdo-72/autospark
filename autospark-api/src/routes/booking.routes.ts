@@ -122,9 +122,10 @@ bookingRouter.post('/', async (req: AuthedRequest, res) => {
   if (washSource === 'paid') {
     subUpdate.paidWashesRemaining = { decrement: 1 }
     subUpdate.paidWashesUsed = { increment: 1 }
-    subUpdate.lastPaidWashDate = new Date()
+    subUpdate.lastWashDate = new Date()
   } else if (washSource === 'free') {
     subUpdate.freeWashesRemaining = { decrement: 1 }
+    subUpdate.lastWashDate = new Date()
   }
   if (waxSource === 'free') {
     subUpdate.freeWaxRemaining = { decrement: 1 }
@@ -170,9 +171,10 @@ bookingRouter.delete('/:id', async (req: AuthedRequest, res) => {
     subUpdate.paidWashesUsed = { decrement: 1 }
     // Only one booking can be active at a time, so this cancellation can
     // only be undoing the cooldown timer it itself just started.
-    subUpdate.lastPaidWashDate = null
+    subUpdate.lastWashDate = null
   } else if (booking.washSource === 'free') {
     subUpdate.freeWashesRemaining = { increment: 1 }
+    subUpdate.lastWashDate = null
   }
   if (booking.waxSource === 'free') {
     subUpdate.freeWaxRemaining = { increment: 1 }

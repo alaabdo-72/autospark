@@ -65,7 +65,7 @@ subscriptionRouter.post('/', async (req: AuthedRequest, res) => {
       paidWashesUsed: 0,
       freeWashesRemaining: config.freeWashesIncluded,
       freeWaxRemaining: config.freeWaxIncluded,
-      lastPaidWashDate: null,
+      lastWashDate: null,
     },
   })
 

@@ -26,9 +26,9 @@ function generateTimeSlots() {
 
 export const TIME_CHIPS = generateTimeSlots()
 
-// A "paid wash" cooldown of 10 days applies to Monthly and Yearly's paid quota.
-// Yearly's free washes/wax unlock after 3 paid washes, and each free wash
-// additionally needs 3 days since the last PAID wash.
+// A minimum-7-day cooldown applies between any two washes (paid or free) on
+// Monthly and Yearly. Yearly's free washes unlock one at a time, one per
+// every 3 paid washes booked, up to freeWashesIncluded.
 export const PLANS = {
   payg: {
     id: 'payg',
@@ -45,7 +45,7 @@ export const PLANS = {
     priceSuffix: '/ 3 washes',
     perk: '3 washes for 9 JD',
     washesIncluded: 3,
-    paidWashCooldownDays: 10,
+    minDaysBetweenWashes: 7,
   },
   yearly: {
     id: 'yearly',
@@ -57,8 +57,7 @@ export const PLANS = {
     washesIncluded: 36,
     freeWashesIncluded: 4,
     freeWaxIncluded: 1,
-    paidWashCooldownDays: 10,
+    minDaysBetweenWashes: 7,
     freePerkUnlockAfterPaidWashes: 3,
-    freeWashCooldownAfterPaidDays: 3,
   },
 }

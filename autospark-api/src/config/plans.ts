@@ -17,9 +17,8 @@ export const PLANS: Record<
     washesIncluded: number
     freeWashesIncluded: number
     freeWaxIncluded: number
-    paidWashCooldownDays: number
+    minDaysBetweenWashes: number
     freePerkUnlockAfterPaidWashes: number
-    freeWashCooldownAfterPaidDays: number
   }
 > = {
   payg: {
@@ -27,27 +26,24 @@ export const PLANS: Record<
     washesIncluded: 0,
     freeWashesIncluded: 0,
     freeWaxIncluded: 0,
-    paidWashCooldownDays: 0,
+    minDaysBetweenWashes: 0,
     freePerkUnlockAfterPaidWashes: 0,
-    freeWashCooldownAfterPaidDays: 0,
   },
   monthly: {
     price: 9,
     washesIncluded: 3,
     freeWashesIncluded: 0,
     freeWaxIncluded: 0,
-    paidWashCooldownDays: 10,
+    minDaysBetweenWashes: 7,
     freePerkUnlockAfterPaidWashes: 0,
-    freeWashCooldownAfterPaidDays: 0,
   },
   yearly: {
     price: 90,
     washesIncluded: 36,
     freeWashesIncluded: 4,
     freeWaxIncluded: 1,
-    paidWashCooldownDays: 10,
+    minDaysBetweenWashes: 7,
     freePerkUnlockAfterPaidWashes: 3,
-    freeWashCooldownAfterPaidDays: 3,
   },
 }
 

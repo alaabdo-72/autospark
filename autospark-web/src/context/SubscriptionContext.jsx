@@ -47,6 +47,8 @@ export function SubscriptionProvider({ children }) {
     paygCreditJD: subscription?.paygCreditJD ?? 0,
     canBookPaid: subscription?.canBookPaid ?? false,
     canBookFree: subscription?.canBookFree ?? false,
+    freeWashesUnlocked: subscription?.freeWashesUnlocked ?? 0,
+    paidWashesUntilNextFreeUnlock: subscription?.paidWashesUntilNextFreeUnlock ?? 0,
     nextEligibleAt: subscription?.nextEligibleAt ? new Date(subscription.nextEligibleAt) : null,
     waxUnlockedFree: subscription?.waxUnlockedFree ?? false,
     subscribe,
