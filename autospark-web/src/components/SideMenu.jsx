@@ -1,6 +1,10 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 import Logo from './Logo'
 import { useAuth } from '../context/AuthContext'
+import { useBooking } from '../context/BookingContext'
+import { useNow } from '../hooks/useNow'
+
+const CHECK_IN_WINDOW_MS = 3 * 60 * 1000
 
 function HomeIcon() {
   return (
@@ -75,6 +79,12 @@ export default function SideMenu({ open, onClose }) {
   const navigate = useNavigate()
   const location = useLocation()
   const { logout } = useAuth()
+  const { booking } = useBooking()
+  const now = useNow(1000)
+
+  const isCheckedIn = booking?.status === 'checked_in'
+  const remainingMs = booking ? new Date(booking.estimatedStartAt).getTime() - now : Infinity
+  const canCheckIn = Boolean(booking) && (isCheckedIn || remainingMs <= CHECK_IN_WINDOW_MS)
 
   function goTo(path) {
     onClose()
@@ -113,19 +123,31 @@ export default function SideMenu({ open, onClose }) {
         <nav className="flex-1 px-3 mt-2 flex flex-col gap-1">
           {MENU_ITEMS.map(({ label, path, icon: Icon }) => {
             const isActive = location.pathname === path
+            const isCheckInItem = path === '/checkin'
+            const isDisabled = isCheckInItem && !canCheckIn
             return (
               <button
                 key={path}
                 type="button"
+                disabled={isDisabled}
                 onClick={() => goTo(path)}
                 className={`flex items-center gap-3 px-3 py-3 rounded-xl text-left font-semibold transition-colors ${
-                  isActive ? 'bg-brand-50 text-brand-700' : 'text-slate-700 active:bg-brand-50'
+                  isDisabled
+                    ? 'text-slate-300 cursor-not-allowed'
+                    : isActive
+                      ? 'bg-brand-50 text-brand-700'
+                      : 'text-slate-700 active:bg-brand-50'
                 }`}
               >
-                <span className="text-brand-600">
+                <span className={isDisabled ? 'text-slate-300' : 'text-brand-600'}>
                   <Icon />
                 </span>
-                {label}
+                <span className="flex flex-col">
+                  {label}
+                  {isDisabled && (
+                    <span className="text-xs font-normal text-slate-300">Opens 3 min before your turn</span>
+                  )}
+                </span>
               </button>
             )
           })}
