@@ -1,5 +1,9 @@
 # Using Android gitignore template: https://github.com/github/gitignore/blob/HEAD/Android.gitignore
 
+# Locally-downloaded/extracted Gradle distribution (should live in ~/.gradle, not here)
+gradle-8.14.3-all/
+gradle-8.14.3-all.zip
+
 # Built application files
 *.apk
 *.aar

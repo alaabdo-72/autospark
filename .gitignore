@@ -4,3 +4,5 @@
 *.jpg
 *.jpeg
 !autospark-web/src/assets/*
+!autospark-web/resources/*
+!autospark-web/android/app/src/main/res/**/*.png
