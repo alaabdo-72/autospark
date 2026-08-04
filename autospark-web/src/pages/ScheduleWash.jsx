@@ -25,6 +25,7 @@ export default function ScheduleWash() {
     canBookFree,
     nextEligibleAt,
     waxUnlockedFree,
+    paygCreditJD,
   } = useSubscription()
   const {
     booking,
@@ -35,6 +36,7 @@ export default function ScheduleWash() {
     toggleWax,
     washSource,
     totalPrice,
+    creditApplied,
     previewBayNumber,
     slots,
     canConfirm,
@@ -111,6 +113,9 @@ export default function ScheduleWash() {
     bannerStats.push({ value: paidWashesRemaining, label: 'Paid Washes' })
     bannerStats.push({ value: freeWashesRemaining, label: 'Free Washes' })
   }
+  if (plan === 'payg' && paygCreditJD > 0) {
+    bannerStats.push({ value: `${paygCreditJD} JD`, label: 'Wash Credit' })
+  }
 
   let washStatusLabel = 'Included in your subscription'
   if (plan === 'payg') washStatusLabel = `${PAYG_WASH_PRICE_JD} JD`
@@ -140,6 +145,12 @@ export default function ScheduleWash() {
         )}
         <WashInfoCard statusLabel={washStatusLabel} />
         <WaxOption included={waxUnlockedFree} checked={draft.waxAdded} onToggle={toggleWax} />
+
+        {creditApplied > 0 && (
+          <div className="mx-5 mt-4 rounded-xl bg-brand-50 border border-brand-100 px-4 py-2.5 text-sm text-brand-700 font-medium">
+            {creditApplied} JD credit applied
+          </div>
+        )}
 
         {error && (
           <div className="mx-5 mt-4 rounded-xl bg-red-50 border border-red-100 px-4 py-2.5 text-sm text-red-600">

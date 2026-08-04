@@ -29,6 +29,7 @@ model Subscription {
   freeWaxRemaining   Int       @default(0)
   lastPaidWashDate   DateTime?
   points             Int       @default(0)
+  paygCreditJD       Float     @default(0)
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 }
@@ -45,6 +46,7 @@ model Booking {
   waxSource       String? // paid | free
   washPrice       Float     @default(0)
   waxPrice        Float     @default(0)
+  creditApplied   Float     @default(0)
   totalPrice      Float     @default(0)
   status          String    @default("confirmed") // confirmed | checked_in | cancelled | completed
   estimatedStartAt DateTime

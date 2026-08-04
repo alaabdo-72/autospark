@@ -94,7 +94,11 @@ bookingRouter.post('/', async (req: AuthedRequest, res) => {
   const waxSource = waxAdded ? (eligibility.waxUnlockedFree ? 'free' : 'paid') : null
   const washPrice = washSource === 'payg' ? PAYG_WASH_PRICE_JD : 0
   const waxPrice = waxSource === 'paid' ? WAX_PRICE_JD : 0
-  const totalPrice = washPrice + waxPrice
+  const rawTotal = washPrice + waxPrice
+  // PAYG credit (built up from cancelled PAYG bookings — see the cancel
+  // route) is applied automatically before falling back to a card charge.
+  const creditApplied = washSource === 'payg' ? Math.min(sub.paygCreditJD, rawTotal) : 0
+  const totalPrice = rawTotal - creditApplied
 
   const booking = await prisma.booking.create({
     data: {
@@ -107,6 +111,7 @@ bookingRouter.post('/', async (req: AuthedRequest, res) => {
       waxSource,
       washPrice,
       waxPrice,
+      creditApplied,
       totalPrice,
       estimatedStartAt,
       waitMinutes,
@@ -123,6 +128,9 @@ bookingRouter.post('/', async (req: AuthedRequest, res) => {
   }
   if (waxSource === 'free') {
     subUpdate.freeWaxRemaining = { decrement: 1 }
+  }
+  if (creditApplied > 0) {
+    subUpdate.paygCreditJD = { decrement: creditApplied }
   }
   if (Object.keys(subUpdate).length > 0) {
     await prisma.subscription.update({ where: { userId: req.userId! }, data: subUpdate })
@@ -149,6 +157,30 @@ bookingRouter.delete('/:id', async (req: AuthedRequest, res) => {
     where: { id: booking.id },
     data: { status: 'cancelled' },
   })
+
+  // Refund whatever this booking consumed, since it never actually happened.
+  const subUpdate: Record<string, unknown> = {}
+  if (booking.washSource === 'payg') {
+    // Everything paid for this booking — whether by card or by previously
+    // applied credit — becomes credit again, per the coupon rule.
+    const refund = booking.washPrice + booking.waxPrice
+    if (refund > 0) subUpdate.paygCreditJD = { increment: refund }
+  } else if (booking.washSource === 'paid') {
+    subUpdate.paidWashesRemaining = { increment: 1 }
+    subUpdate.paidWashesUsed = { decrement: 1 }
+    // Only one booking can be active at a time, so this cancellation can
+    // only be undoing the cooldown timer it itself just started.
+    subUpdate.lastPaidWashDate = null
+  } else if (booking.washSource === 'free') {
+    subUpdate.freeWashesRemaining = { increment: 1 }
+  }
+  if (booking.waxSource === 'free') {
+    subUpdate.freeWaxRemaining = { increment: 1 }
+  }
+  if (Object.keys(subUpdate).length > 0) {
+    await prisma.subscription.update({ where: { userId: req.userId! }, data: subUpdate })
+  }
+
   res.json({ booking: updated })
 })
 

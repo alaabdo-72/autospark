@@ -44,6 +44,7 @@ export function SubscriptionProvider({ children }) {
     freeWashesRemaining: subscription?.freeWashesRemaining ?? 0,
     freeWaxRemaining: subscription?.freeWaxRemaining ?? 0,
     points: subscription?.points ?? 0,
+    paygCreditJD: subscription?.paygCreditJD ?? 0,
     canBookPaid: subscription?.canBookPaid ?? false,
     canBookFree: subscription?.canBookFree ?? false,
     nextEligibleAt: subscription?.nextEligibleAt ? new Date(subscription.nextEligibleAt) : null,

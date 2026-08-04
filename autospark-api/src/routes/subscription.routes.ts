@@ -17,6 +17,7 @@ function serialize(sub: NonNullable<Awaited<ReturnType<typeof prisma.subscriptio
     freeWashesRemaining: sub.freeWashesRemaining,
     freeWaxRemaining: sub.freeWaxRemaining,
     points: sub.points,
+    paygCreditJD: sub.paygCreditJD,
     ...eligibility,
   }
 }

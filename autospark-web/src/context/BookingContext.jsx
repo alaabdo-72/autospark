@@ -8,7 +8,8 @@ const BookingContext = createContext(null)
 
 export function BookingProvider({ children }) {
   const { isAuthed } = useAuth()
-  const { plan, canBookPaid, canBookFree, waxUnlockedFree, refresh: refreshSubscription } = useSubscription()
+  const { plan, canBookPaid, canBookFree, waxUnlockedFree, paygCreditJD, refresh: refreshSubscription } =
+    useSubscription()
 
   const [draft, setDraft] = useState({ date: null, time: null, waxAdded: false })
   const [booking, setBooking] = useState(null)
@@ -58,7 +59,9 @@ export function BookingProvider({ children }) {
 
   const washPrice = washSource === 'payg' ? PAYG_WASH_PRICE_JD : 0
   const waxPrice = waxSource === 'paid' ? WAX_PRICE_JD : 0
-  const totalPrice = washPrice + waxPrice
+  const rawTotal = washPrice + waxPrice
+  const creditApplied = washSource === 'payg' ? Math.min(paygCreditJD, rawTotal) : 0
+  const totalPrice = rawTotal - creditApplied
 
   const selectedSlot = slots.find((s) => s.time === draft.time)
   const previewBayNumber = selectedSlot && !selectedSlot.isFull ? selectedSlot.reservedCount + 1 : null
@@ -100,6 +103,7 @@ export function BookingProvider({ children }) {
     waxSource,
     washPrice,
     waxPrice,
+    creditApplied,
     totalPrice,
     previewBayNumber,
     slots,
