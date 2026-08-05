@@ -11,6 +11,7 @@ import ComingSoon from './pages/ComingSoon'
 import AdminLogin from './pages/AdminLogin'
 import AdminDashboard from './pages/AdminDashboard'
 import AdminBayBoard from './pages/AdminBayBoard'
+import AdminLiveQueue from './pages/AdminLiveQueue'
 import RequireAuth from './components/RequireAuth'
 import RequireAdminAuth from './components/RequireAdminAuth'
 
@@ -76,6 +77,14 @@ export default function App() {
         element={
           <RequireAdminAuth>
             <AdminBayBoard />
+          </RequireAdminAuth>
+        }
+      />
+      <Route
+        path="/admin/queue"
+        element={
+          <RequireAdminAuth>
+            <AdminLiveQueue />
           </RequireAdminAuth>
         }
       />
