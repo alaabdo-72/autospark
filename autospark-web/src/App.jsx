@@ -8,7 +8,10 @@ import LiveTracker from './pages/LiveTracker'
 import CheckIn from './pages/CheckIn'
 import Subscription from './pages/Subscription'
 import ComingSoon from './pages/ComingSoon'
+import AdminLogin from './pages/AdminLogin'
+import AdminDashboard from './pages/AdminDashboard'
 import RequireAuth from './components/RequireAuth'
+import RequireAdminAuth from './components/RequireAdminAuth'
 
 export default function App() {
   return (
@@ -57,6 +60,17 @@ export default function App() {
         }
       />
       <Route path="/history" element={<ComingSoon label="Booking History" />} />
+
+      <Route path="/admin/login" element={<AdminLogin />} />
+      <Route
+        path="/admin"
+        element={
+          <RequireAdminAuth>
+            <AdminDashboard />
+          </RequireAdminAuth>
+        }
+      />
+
       <Route path="*" element={<ComingSoon label="Not found" />} />
     </Routes>
   )

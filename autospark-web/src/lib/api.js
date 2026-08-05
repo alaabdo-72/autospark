@@ -12,7 +12,7 @@ function resolveApiUrl() {
   return import.meta.env.VITE_API_URL ?? 'http://localhost:4000'
 }
 
-const API_URL = resolveApiUrl()
+export const API_URL = resolveApiUrl()
 
 const TOKEN_KEY = 'autospark.token'
 

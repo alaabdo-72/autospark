@@ -18,6 +18,16 @@ model User {
   bookings     Booking[]
 }
 
+model AdminUser {
+  id           String   @id @default(cuid())
+  name         String
+  emailOrPhone String   @unique
+  passwordHash String
+  role         String   @default("admin") // admin | staff
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+}
+
 model Subscription {
   id                 String    @id @default(cuid())
   userId             String    @unique

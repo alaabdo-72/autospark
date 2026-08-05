@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction } from 'express'
 import { verifyToken } from '../lib/auth'
 
-export interface AuthedRequest extends Request {
-  userId?: string
+export interface AdminAuthedRequest extends Request {
+  adminId?: string
 }
 
-export function requireAuth(req: AuthedRequest, res: Response, next: NextFunction) {
+export function requireAdminAuth(req: AdminAuthedRequest, res: Response, next: NextFunction) {
   const header = req.headers.authorization
   const token = header?.startsWith('Bearer ') ? header.slice(7) : null
 
@@ -14,10 +14,10 @@ export function requireAuth(req: AuthedRequest, res: Response, next: NextFunctio
   }
 
   const payload = verifyToken(token)
-  if (!payload || payload.type !== 'customer') {
+  if (!payload || payload.type !== 'admin') {
     return res.status(401).json({ error: 'Invalid or expired token' })
   }
 
-  req.userId = payload.sub
+  req.adminId = payload.sub
   next()
 }
