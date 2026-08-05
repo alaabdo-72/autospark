@@ -12,6 +12,7 @@ import AdminLogin from './pages/AdminLogin'
 import AdminDashboard from './pages/AdminDashboard'
 import AdminBayBoard from './pages/AdminBayBoard'
 import AdminLiveQueue from './pages/AdminLiveQueue'
+import AdminWalkIn from './pages/AdminWalkIn'
 import RequireAuth from './components/RequireAuth'
 import RequireAdminAuth from './components/RequireAdminAuth'
 
@@ -85,6 +86,14 @@ export default function App() {
         element={
           <RequireAdminAuth>
             <AdminLiveQueue />
+          </RequireAdminAuth>
+        }
+      />
+      <Route
+        path="/admin/walkin"
+        element={
+          <RequireAdminAuth>
+            <AdminWalkIn />
           </RequireAdminAuth>
         }
       />

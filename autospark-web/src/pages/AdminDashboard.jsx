@@ -5,6 +5,7 @@ import { useAdminAuth } from '../context/AdminAuthContext'
 const SECTIONS = [
   { label: 'Bay Board', path: '/admin/bays', available: true },
   { label: 'Live Queue', path: '/admin/queue', available: true },
+  { label: 'Walk-In Booking', path: '/admin/walkin', available: true },
   { label: 'Subscriptions', available: false },
   { label: 'Cooldown Settings', available: false },
   { label: 'Loyalty Program', available: false },
