@@ -9,7 +9,7 @@ const SECTIONS = [
   { label: 'Subscription Plans', path: '/admin/subscription-plans', available: true },
   { label: 'Cooldown Settings', available: false },
   { label: 'Loyalty Program', available: false },
-  { label: 'Reports', available: false },
+  { label: 'Reports', path: '/admin/reports', available: true },
 ]
 
 export default function AdminDashboard() {

@@ -13,6 +13,7 @@ import { adminServiceConfigRouter } from './routes/adminServiceConfig.routes'
 import { serviceConfigRouter } from './routes/serviceConfig.routes'
 import { adminPlanConfigRouter } from './routes/adminPlanConfig.routes'
 import { planConfigRouter } from './routes/planConfig.routes'
+import { adminReportsRouter } from './routes/adminReports.routes'
 import { ensureBootstrapAdmin } from './lib/adminBootstrap'
 import { ensureBootstrapBays } from './lib/bayBootstrap'
 import { ensureBootstrapServiceConfig } from './lib/serviceConfigBootstrap'
@@ -37,6 +38,7 @@ app.use('/admin/bays', adminBayRouter)
 app.use('/admin/walkin', adminWalkInRouter)
 app.use('/admin/service-config', adminServiceConfigRouter)
 app.use('/admin/plan-config', adminPlanConfigRouter)
+app.use('/admin/reports', adminReportsRouter)
 
 app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error(err)
