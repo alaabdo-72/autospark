@@ -55,7 +55,7 @@ export default function Subscription() {
   return (
     <div className="auth-shell px-8 py-10">
       <div className="flex items-center justify-between">
-        <Logo size={44} />
+        <Logo size={88} />
         <button
           type="button"
           onClick={() => navigate(-1)}
