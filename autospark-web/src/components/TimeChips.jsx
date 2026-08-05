@@ -1,10 +1,11 @@
 import { TIME_CHIPS } from '../mock/services'
-import { toLocalISODate } from '../lib/format'
+import { toBusinessISODate, businessNow } from '../lib/format'
 
 export default function TimeChips({ value, onChange, slots, date }) {
   const fullTimes = new Set(slots.filter((s) => s.isFull).map((s) => s.time))
-  const isToday = date === toLocalISODate(new Date())
-  const nowMinutes = new Date().getHours() * 60 + new Date().getMinutes()
+  const now = businessNow()
+  const isToday = date === toBusinessISODate(now)
+  const nowMinutes = now.getUTCHours() * 60 + now.getUTCMinutes()
 
   return (
     <div className="px-5 mt-5">

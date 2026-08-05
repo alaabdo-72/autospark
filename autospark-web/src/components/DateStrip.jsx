@@ -1,13 +1,10 @@
-import { toLocalISODate, formatDateLabel } from '../lib/format'
+import { toBusinessISODate, formatDateLabel, businessNow } from '../lib/format'
 
 function nextDays(count) {
   const days = []
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  const today = businessNow()
   for (let i = 0; i < count; i++) {
-    const d = new Date(today)
-    d.setDate(today.getDate() + i)
-    days.push(d)
+    days.push(new Date(today.getTime() + i * 86400000))
   }
   return days
 }
@@ -22,7 +19,7 @@ export default function DateStrip({ value, onChange }) {
       <h2 className="text-sm font-semibold text-slate-700 mb-2">Date</h2>
       <div className="grid grid-cols-2 gap-2">
         {days.map((d, i) => {
-          const iso = toLocalISODate(d)
+          const iso = toBusinessISODate(d)
           const isSelected = value === iso
           return (
             <button
