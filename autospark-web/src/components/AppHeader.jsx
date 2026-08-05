@@ -7,9 +7,9 @@ export default function AppHeader({ title, subtitle }) {
 
   return (
     <>
-      <header className="flex items-center justify-between gap-3 px-5 pt-6 pb-4">
+      <header className="w-full flex items-center justify-between gap-3 px-5 pt-6 pb-4">
         <div className="flex items-center gap-3">
-          <Logo />
+          <Logo size={72} />
           <div className="text-left">
             <h1 className="text-lg font-semibold text-brand-950 leading-tight">{title}</h1>
             {subtitle && <p className="text-sm text-slate-500 leading-tight">{subtitle}</p>}
