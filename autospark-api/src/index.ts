@@ -8,7 +8,6 @@ import { bookingRouter } from './routes/booking.routes'
 import { slotsRouter } from './routes/slots.routes'
 import { adminAuthRouter } from './routes/adminAuth.routes'
 import { adminBayRouter } from './routes/adminBay.routes'
-import { adminQueueRouter } from './routes/adminQueue.routes'
 import { adminWalkInRouter } from './routes/adminWalkIn.routes'
 import { ensureBootstrapAdmin } from './lib/adminBootstrap'
 import { ensureBootstrapBays } from './lib/bayBootstrap'
@@ -27,7 +26,6 @@ app.use('/bookings', bookingRouter)
 app.use('/slots', slotsRouter)
 app.use('/admin/auth', adminAuthRouter)
 app.use('/admin/bays', adminBayRouter)
-app.use('/admin/queue', adminQueueRouter)
 app.use('/admin/walkin', adminWalkInRouter)
 
 app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
