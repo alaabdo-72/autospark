@@ -4,6 +4,7 @@ import Logo from '../components/Logo'
 import PaymentModal from '../components/PaymentModal'
 import { PLANS } from '../mock/services'
 import { useSubscription } from '../context/SubscriptionContext'
+import { useServiceConfig } from '../context/ServiceConfigContext'
 
 const PLAN_ORDER = ['payg', 'monthly', 'yearly']
 
@@ -20,9 +21,19 @@ function CheckIcon({ className }) {
 export default function Subscription() {
   const navigate = useNavigate()
   const { subscribe } = useSubscription()
+  const { paygWashPriceJD } = useServiceConfig()
   const [selectedPlan, setSelectedPlan] = useState('payg')
   const [showPayment, setShowPayment] = useState(false)
   const [error, setError] = useState(null)
+
+  const displayPlans = {
+    ...PLANS,
+    payg: {
+      ...PLANS.payg,
+      priceLabel: `${paygWashPriceJD} JD`,
+      perk: `${paygWashPriceJD} JD for each wash`,
+    },
+  }
 
   async function handleChoosePlan() {
     setError(null)
@@ -50,7 +61,7 @@ export default function Subscription() {
     }
   }
 
-  const plan = PLANS[selectedPlan]
+  const plan = displayPlans[selectedPlan]
 
   return (
     <div className="auth-shell px-8 py-10">
@@ -75,7 +86,7 @@ export default function Subscription() {
 
       <div className="flex flex-col gap-5 mt-8">
         {PLAN_ORDER.map((planId) => {
-          const p = PLANS[planId]
+          const p = displayPlans[planId]
           const isSelected = selectedPlan === planId
           return (
             <button

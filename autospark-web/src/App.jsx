@@ -12,6 +12,7 @@ import AdminLogin from './pages/AdminLogin'
 import AdminDashboard from './pages/AdminDashboard'
 import AdminBayBoard from './pages/AdminBayBoard'
 import AdminWalkIn from './pages/AdminWalkIn'
+import AdminServiceConfig from './pages/AdminServiceConfig'
 import RequireAuth from './components/RequireAuth'
 import RequireAdminAuth from './components/RequireAdminAuth'
 
@@ -85,6 +86,14 @@ export default function App() {
         element={
           <RequireAdminAuth>
             <AdminWalkIn />
+          </RequireAdminAuth>
+        }
+      />
+      <Route
+        path="/admin/service-config"
+        element={
+          <RequireAdminAuth>
+            <AdminServiceConfig />
           </RequireAdminAuth>
         }
       />

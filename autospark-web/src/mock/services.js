@@ -1,14 +1,3 @@
-export const BASIC_WASH = {
-  name: 'Basic Wash',
-  exteriorMinutes: 7,
-  interiorMinutes: 8,
-  exteriorDescription: 'Exterior wash by machine',
-  interiorDescription: 'Vacuuming & Interior Detailing',
-}
-
-export const WAX_PRICE_JD = 4
-export const PAYG_WASH_PRICE_JD = 3.5
-
 function generateTimeSlots() {
   const slots = []
   let hours = 8
@@ -33,9 +22,9 @@ export const PLANS = {
   payg: {
     id: 'payg',
     label: 'Pay As You Go',
-    priceLabel: `${PAYG_WASH_PRICE_JD} JD`,
+    // priceLabel/perk are overridden at render time with the live
+    // service-config price — see Subscription.jsx's displayPlans.
     priceSuffix: '/ wash',
-    perk: `${PAYG_WASH_PRICE_JD} JD for each wash`,
   },
   monthly: {
     id: 'monthly',

@@ -4,7 +4,7 @@ import Logo from '../components/Logo'
 import CancelReservationModal from '../components/CancelReservationModal'
 import SideMenu from '../components/SideMenu'
 import { useBooking } from '../context/BookingContext'
-import { BASIC_WASH } from '../mock/services'
+import { useServiceConfig } from '../context/ServiceConfigContext'
 import { formatDateLabel } from '../lib/format'
 import { formatDurationHM } from '../lib/countdown'
 import { useNow } from '../hooks/useNow'
@@ -14,6 +14,7 @@ const CANCEL_CUTOFF_MS = 60 * 60 * 1000
 export default function WaitingConfirmation() {
   const navigate = useNavigate()
   const { booking, bookingLoaded, cancelBooking } = useBooking()
+  const { washName, waxName } = useServiceConfig()
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [error, setError] = useState(null)
@@ -94,8 +95,8 @@ export default function WaitingConfirmation() {
         <div className="flex justify-between text-sm py-1">
           <span className="text-slate-500">Wash</span>
           <span className="font-semibold text-slate-800">
-            {BASIC_WASH.name}
-            {booking.waxAdded && ' + Wax'}
+            {washName}
+            {booking.waxAdded && ` + ${waxName}`}
           </span>
         </div>
       </div>

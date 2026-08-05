@@ -6,6 +6,7 @@ import App from './App.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
 import { AdminAuthProvider } from './context/AdminAuthContext.jsx'
 import { SubscriptionProvider } from './context/SubscriptionContext.jsx'
+import { ServiceConfigProvider } from './context/ServiceConfigContext.jsx'
 import { BookingProvider } from './context/BookingContext.jsx'
 
 createRoot(document.getElementById('root')).render(
@@ -14,9 +15,11 @@ createRoot(document.getElementById('root')).render(
       <AdminAuthProvider>
         <AuthProvider>
           <SubscriptionProvider>
-            <BookingProvider>
-              <App />
-            </BookingProvider>
+            <ServiceConfigProvider>
+              <BookingProvider>
+                <App />
+              </BookingProvider>
+            </ServiceConfigProvider>
           </SubscriptionProvider>
         </AuthProvider>
       </AdminAuthProvider>

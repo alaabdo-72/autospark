@@ -35,6 +35,19 @@ model Bay {
   createdAt DateTime @default(now())
 }
 
+// A single row holding the wash service + its one extra — admin-editable
+// pricing/durations, replacing what used to be hardcoded constants.
+model ServiceConfig {
+  id              String   @id @default(cuid())
+  washName        String   @default("Basic Wash")
+  exteriorMinutes Int      @default(7)
+  interiorMinutes Int      @default(8)
+  paygWashPriceJD Float    @default(3.5)
+  waxName         String   @default("Wax")
+  waxPriceJD      Float    @default(4)
+  updatedAt       DateTime @updatedAt
+}
+
 model Subscription {
   id                 String    @id @default(cuid())
   userId             String    @unique

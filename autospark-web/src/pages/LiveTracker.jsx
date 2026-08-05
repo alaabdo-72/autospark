@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import AppHeader from '../components/AppHeader'
 import CancelReservationModal from '../components/CancelReservationModal'
 import { useBooking } from '../context/BookingContext'
-import { BASIC_WASH } from '../mock/services'
+import { useServiceConfig } from '../context/ServiceConfigContext'
 import { formatDateLabel, formatClockTime } from '../lib/format'
 import { formatCountdown } from '../lib/countdown'
 import { useNow } from '../hooks/useNow'
@@ -14,6 +14,7 @@ const CANCEL_CUTOFF_MS = 60 * 60 * 1000
 export default function LiveTracker() {
   const navigate = useNavigate()
   const { booking, bookingLoaded, cancelBooking } = useBooking()
+  const { washName, waxName } = useServiceConfig()
   const now = useNow(1000)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const [error, setError] = useState(null)
@@ -81,8 +82,8 @@ export default function LiveTracker() {
           <div className="flex justify-between text-sm py-1">
             <span className="text-slate-500">Wash</span>
             <span className="font-semibold text-slate-800">
-              {BASIC_WASH.name}
-              {booking.waxAdded && ' + Wax'}
+              {washName}
+              {booking.waxAdded && ` + ${waxName}`}
             </span>
           </div>
         </div>

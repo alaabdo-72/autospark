@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { apiFetch } from '../lib/api'
 import { useAuth } from './AuthContext'
 import { useSubscription } from './SubscriptionContext'
-import { PAYG_WASH_PRICE_JD, WAX_PRICE_JD } from '../mock/services'
+import { useServiceConfig } from './ServiceConfigContext'
 
 const BookingContext = createContext(null)
 
@@ -10,6 +10,7 @@ export function BookingProvider({ children }) {
   const { isAuthed } = useAuth()
   const { plan, canBookPaid, canBookFree, waxUnlockedFree, paygCreditJD, refresh: refreshSubscription } =
     useSubscription()
+  const { paygWashPriceJD, waxPriceJD } = useServiceConfig()
 
   const [draft, setDraft] = useState({ date: null, time: null, waxAdded: false })
   const [booking, setBooking] = useState(null)
@@ -57,8 +58,8 @@ export function BookingProvider({ children }) {
     return waxUnlockedFree ? 'free' : 'paid'
   }, [draft.waxAdded, waxUnlockedFree])
 
-  const washPrice = washSource === 'payg' ? PAYG_WASH_PRICE_JD : 0
-  const waxPrice = waxSource === 'paid' ? WAX_PRICE_JD : 0
+  const washPrice = washSource === 'payg' ? paygWashPriceJD : 0
+  const waxPrice = waxSource === 'paid' ? waxPriceJD : 0
   const rawTotal = washPrice + waxPrice
   const creditApplied = washSource === 'payg' ? Math.min(paygCreditJD, rawTotal) : 0
   const totalPrice = rawTotal - creditApplied

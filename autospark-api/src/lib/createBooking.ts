@@ -1,7 +1,8 @@
 import { prisma } from '../db/client'
-import { PAYG_WASH_PRICE_JD, WAX_PRICE_JD, WASH_DURATION_MINUTES, PlanId } from '../config/plans'
+import { PlanId } from '../config/plans'
 import { businessNow, computeQueueForSlot, isSlotFull, parseSlotDateTime } from './queue'
 import { evaluateEligibility, resolveWashSource } from './subscriptionEligibility'
+import { getServiceConfig, washDurationMinutes } from './serviceConfig'
 
 // Shared by the customer's own booking flow and the admin walk-in flow, so
 // eligibility/capacity/pricing rules can never drift between the two paths.
@@ -37,7 +38,8 @@ export async function getActiveBookingForUser(userId: string) {
   })
   if (!booking) return null
 
-  const noShowCutoff = booking.estimatedStartAt.getTime() + WASH_DURATION_MINUTES * 60000
+  const config = await getServiceConfig()
+  const noShowCutoff = booking.estimatedStartAt.getTime() + washDurationMinutes(config) * 60000
   if (Date.now() >= noShowCutoff) {
     await prisma.booking.update({ where: { id: booking.id }, data: { status: 'completed' } })
     return null
@@ -86,10 +88,11 @@ export async function createBookingForUser(
   }
 
   const { bayNumber, estimatedStartAt, waitMinutes } = await computeQueueForSlot(date, time)
+  const config = await getServiceConfig()
 
   const waxSource = waxAdded ? (eligibility.waxUnlockedFree ? 'free' : 'paid') : null
-  const washPrice = washSource === 'payg' ? PAYG_WASH_PRICE_JD : 0
-  const waxPrice = waxSource === 'paid' ? WAX_PRICE_JD : 0
+  const washPrice = washSource === 'payg' ? config.paygWashPriceJD : 0
+  const waxPrice = waxSource === 'paid' ? config.waxPriceJD : 0
   const rawTotal = washPrice + waxPrice
   // PAYG credit (built up from cancelled PAYG bookings — see the cancel
   // route) is applied automatically before falling back to a card charge.

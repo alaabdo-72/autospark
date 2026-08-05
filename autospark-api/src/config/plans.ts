@@ -1,5 +1,3 @@
-export const WAX_PRICE_JD = 4
-export const PAYG_WASH_PRICE_JD = 3.5
 export const CYCLE_MINUTES = 7
 export const BUFFER_SECONDS = 75
 export const POINTS_PER_WASH = 10
@@ -62,11 +60,3 @@ function generateTimeSlots(): string[] {
 }
 
 export const TIME_SLOTS = generateTimeSlots()
-
-export const BASIC_WASH = {
-  name: 'Basic Wash',
-  exteriorMinutes: 7,
-  interiorMinutes: 8,
-}
-
-export const WASH_DURATION_MINUTES = BASIC_WASH.exteriorMinutes + BASIC_WASH.interiorMinutes

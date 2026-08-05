@@ -2,22 +2,23 @@ import { Router } from 'express'
 import { z } from 'zod'
 import { prisma } from '../db/client'
 import { requireAdminAuth } from '../middleware/requireAdminAuth'
-import { WASH_DURATION_MINUTES } from '../config/plans'
+import { getServiceConfig, washDurationMinutes } from '../lib/serviceConfig'
 
 export const adminBayRouter = Router()
 adminBayRouter.use(requireAdminAuth)
 
 adminBayRouter.get('/', async (_req, res) => {
-  const [bays, washingBookings] = await Promise.all([
+  const [bays, washingBookings, config] = await Promise.all([
     prisma.bay.findMany({ orderBy: { number: 'asc' } }),
     prisma.booking.findMany({ where: { status: 'checked_in' } }),
+    getServiceConfig(),
   ])
 
   const now = Date.now()
   const busyByBayNumber = new Map<number, { bookingId: string; remainingMinutes: number }>()
   for (const booking of washingBookings) {
     if (!booking.checkedInAt) continue
-    const doneAt = booking.checkedInAt.getTime() + WASH_DURATION_MINUTES * 60000
+    const doneAt = booking.checkedInAt.getTime() + washDurationMinutes(config) * 60000
     if (now < doneAt) {
       busyByBayNumber.set(booking.bayNumber, {
         bookingId: booking.id,

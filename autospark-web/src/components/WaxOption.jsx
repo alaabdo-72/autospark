@@ -1,6 +1,8 @@
-import { WAX_PRICE_JD } from '../mock/services'
+import { useServiceConfig } from '../context/ServiceConfigContext'
 
 export default function WaxOption({ included, checked, onToggle }) {
+  const { waxName, waxPriceJD } = useServiceConfig()
+
   return (
     <div className="px-5 mt-5">
       <h2 className="text-sm font-semibold text-slate-700 mb-2">Wax</h2>
@@ -24,14 +26,14 @@ export default function WaxOption({ included, checked, onToggle }) {
             )}
           </span>
           <div>
-            <p className="text-sm font-semibold text-slate-800">Add Wax</p>
+            <p className="text-sm font-semibold text-slate-800">Add {waxName}</p>
             <p className="text-xs text-slate-500 mt-0.5">
               {included ? 'Included in your plan' : 'Not included in your plan'}
             </p>
           </div>
         </div>
         <span className="text-sm font-semibold text-brand-700 shrink-0 pl-2">
-          {included ? 'Free' : `+${WAX_PRICE_JD} JD`}
+          {included ? 'Free' : `+${waxPriceJD} JD`}
         </span>
       </button>
     </div>
