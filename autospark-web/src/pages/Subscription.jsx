@@ -5,6 +5,7 @@ import PaymentModal from '../components/PaymentModal'
 import { PLANS } from '../mock/services'
 import { useSubscription } from '../context/SubscriptionContext'
 import { useServiceConfig } from '../context/ServiceConfigContext'
+import { usePlanConfig } from '../context/PlanConfigContext'
 
 const PLAN_ORDER = ['payg', 'monthly', 'yearly']
 
@@ -22,16 +23,30 @@ export default function Subscription() {
   const navigate = useNavigate()
   const { subscribe } = useSubscription()
   const { paygWashPriceJD } = useServiceConfig()
+  const planConfig = usePlanConfig()
   const [selectedPlan, setSelectedPlan] = useState('payg')
   const [showPayment, setShowPayment] = useState(false)
   const [error, setError] = useState(null)
 
   const displayPlans = {
-    ...PLANS,
     payg: {
       ...PLANS.payg,
+      price: 0,
       priceLabel: `${paygWashPriceJD} JD`,
       perk: `${paygWashPriceJD} JD for each wash`,
+    },
+    monthly: {
+      ...PLANS.monthly,
+      price: planConfig.monthly.price,
+      priceLabel: `${planConfig.monthly.price} JD`,
+      priceSuffix: `/ ${planConfig.monthly.washesIncluded} washes`,
+      perk: `${planConfig.monthly.washesIncluded} washes for ${planConfig.monthly.price} JD`,
+    },
+    yearly: {
+      ...PLANS.yearly,
+      price: planConfig.yearly.price,
+      priceLabel: `${planConfig.yearly.price} JD`,
+      perk: `${planConfig.yearly.washesIncluded} washes + ${planConfig.yearly.freeWashesIncluded} free washes + ${planConfig.yearly.freeWaxIncluded} wax for ${planConfig.yearly.price} JD`,
     },
   }
 

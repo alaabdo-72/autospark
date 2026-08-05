@@ -48,6 +48,20 @@ model ServiceConfig {
   updatedAt       DateTime @updatedAt
 }
 
+// Admin-editable price/quotas for each of the 3 fixed plan types. There's
+// always exactly one row per PLAN_IDS entry — see planConfigBootstrap.ts.
+model SubscriptionPlanConfig {
+  id                            String   @id @default(cuid())
+  planId                        String   @unique // payg | monthly | yearly
+  price                         Float
+  washesIncluded                Int
+  freeWashesIncluded            Int
+  freeWaxIncluded               Int
+  minDaysBetweenWashes          Int
+  freePerkUnlockAfterPaidWashes Int
+  updatedAt                     DateTime @updatedAt
+}
+
 model Subscription {
   id                 String    @id @default(cuid())
   userId             String    @unique

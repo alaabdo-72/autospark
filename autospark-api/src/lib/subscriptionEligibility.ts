@@ -1,4 +1,5 @@
-import { PLANS, PlanId } from '../config/plans'
+import { PlanId } from '../config/plans'
+import { SubscriptionPlanConfig } from '@prisma/client'
 
 export interface SubscriptionLike {
   plan: string
@@ -14,9 +15,8 @@ function daysSince(date: Date | null, now: number) {
   return (now - date.getTime()) / (1000 * 60 * 60 * 24)
 }
 
-export function evaluateEligibility(sub: SubscriptionLike, now = Date.now()) {
+export function evaluateEligibility(sub: SubscriptionLike, config: SubscriptionPlanConfig, now = Date.now()) {
   const plan = sub.plan as PlanId
-  const config = PLANS[plan]
 
   let canBookPaid = false
   let canBookFree = false

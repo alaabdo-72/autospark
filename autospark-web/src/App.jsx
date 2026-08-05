@@ -13,6 +13,7 @@ import AdminDashboard from './pages/AdminDashboard'
 import AdminBayBoard from './pages/AdminBayBoard'
 import AdminWalkIn from './pages/AdminWalkIn'
 import AdminServiceConfig from './pages/AdminServiceConfig'
+import AdminSubscriptionPlans from './pages/AdminSubscriptionPlans'
 import RequireAuth from './components/RequireAuth'
 import RequireAdminAuth from './components/RequireAdminAuth'
 
@@ -94,6 +95,14 @@ export default function App() {
         element={
           <RequireAdminAuth>
             <AdminServiceConfig />
+          </RequireAdminAuth>
+        }
+      />
+      <Route
+        path="/admin/subscription-plans"
+        element={
+          <RequireAdminAuth>
+            <AdminSubscriptionPlans />
           </RequireAdminAuth>
         }
       />

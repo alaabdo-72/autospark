@@ -7,43 +7,6 @@ export const CANCEL_CUTOFF_MINUTES = 60
 export const PLAN_IDS = ['payg', 'monthly', 'yearly'] as const
 export type PlanId = (typeof PLAN_IDS)[number]
 
-export const PLANS: Record<
-  PlanId,
-  {
-    price: number
-    washesIncluded: number
-    freeWashesIncluded: number
-    freeWaxIncluded: number
-    minDaysBetweenWashes: number
-    freePerkUnlockAfterPaidWashes: number
-  }
-> = {
-  payg: {
-    price: 0,
-    washesIncluded: 0,
-    freeWashesIncluded: 0,
-    freeWaxIncluded: 0,
-    minDaysBetweenWashes: 3,
-    freePerkUnlockAfterPaidWashes: 0,
-  },
-  monthly: {
-    price: 9,
-    washesIncluded: 3,
-    freeWashesIncluded: 0,
-    freeWaxIncluded: 0,
-    minDaysBetweenWashes: 7,
-    freePerkUnlockAfterPaidWashes: 0,
-  },
-  yearly: {
-    price: 90,
-    washesIncluded: 36,
-    freeWashesIncluded: 4,
-    freeWaxIncluded: 1,
-    minDaysBetweenWashes: 7,
-    freePerkUnlockAfterPaidWashes: 3,
-  },
-}
-
 function generateTimeSlots(): string[] {
   const slots: string[] = []
   let hours = 8

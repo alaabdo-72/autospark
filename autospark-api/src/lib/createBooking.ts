@@ -3,6 +3,7 @@ import { PlanId } from '../config/plans'
 import { businessNow, computeQueueForSlot, isSlotFull, parseSlotDateTime } from './queue'
 import { evaluateEligibility, resolveWashSource } from './subscriptionEligibility'
 import { getServiceConfig, washDurationMinutes } from './serviceConfig'
+import { getPlanConfig } from './planConfig'
 
 // Shared by the customer's own booking flow and the admin walk-in flow, so
 // eligibility/capacity/pricing rules can never drift between the two paths.
@@ -77,7 +78,8 @@ export async function createBookingForUser(
     return { ok: false, status: 409, error: 'This customer already has an active booking', extra: { booking: existingActive } }
   }
 
-  const eligibility = evaluateEligibility(sub)
+  const planConfig = await getPlanConfig(sub.plan as PlanId)
+  const eligibility = evaluateEligibility(sub, planConfig)
   const washSource = resolveWashSource(sub.plan as PlanId, eligibility.canBookPaid, eligibility.canBookFree)
   if (!washSource) {
     return { ok: false, status: 409, error: 'Not eligible to book right now', extra: { nextEligibleAt: eligibility.nextEligibleAt } }

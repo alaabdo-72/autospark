@@ -6,7 +6,7 @@ const SECTIONS = [
   { label: 'Bay Board', path: '/admin/bays', available: true },
   { label: 'Walk-In Booking', path: '/admin/walkin', available: true },
   { label: 'Service & Pricing', path: '/admin/service-config', available: true },
-  { label: 'Subscriptions', available: false },
+  { label: 'Subscription Plans', path: '/admin/subscription-plans', available: true },
   { label: 'Cooldown Settings', available: false },
   { label: 'Loyalty Program', available: false },
   { label: 'Reports', available: false },

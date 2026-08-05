@@ -12,7 +12,7 @@ import PaymentModal from '../components/PaymentModal'
 import { useBooking } from '../context/BookingContext'
 import { useSubscription } from '../context/SubscriptionContext'
 import { useServiceConfig } from '../context/ServiceConfigContext'
-import { PLANS } from '../mock/services'
+import { usePlanConfig } from '../context/PlanConfigContext'
 import { formatDateLabel, toBusinessISODate } from '../lib/format'
 import { useNow } from '../hooks/useNow'
 
@@ -48,6 +48,7 @@ export default function ScheduleWash() {
     confirmBooking,
   } = useBooking()
   const { paygWashPriceJD } = useServiceConfig()
+  const { yearly: yearlyPlanConfig } = usePlanConfig()
   const [showPayment, setShowPayment] = useState(false)
   const [error, setError] = useState(null)
   const now = useNow(60000)
@@ -153,9 +154,9 @@ export default function ScheduleWash() {
         )}
         {plan === 'yearly' && (
           <FreeWashProgress
-            total={PLANS.yearly.freeWashesIncluded}
+            total={yearlyPlanConfig.freeWashesIncluded}
             unlocked={freeWashesUnlocked}
-            used={PLANS.yearly.freeWashesIncluded - freeWashesRemaining}
+            used={yearlyPlanConfig.freeWashesIncluded - freeWashesRemaining}
             paidWashesUntilNext={paidWashesUntilNextFreeUnlock}
           />
         )}

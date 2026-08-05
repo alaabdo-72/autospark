@@ -2,14 +2,16 @@ import { Router } from 'express'
 import { z } from 'zod'
 import { prisma } from '../db/client'
 import { requireAuth, AuthedRequest } from '../middleware/requireAuth'
-import { PLAN_IDS, PLANS } from '../config/plans'
+import { PLAN_IDS, PlanId } from '../config/plans'
 import { evaluateEligibility } from '../lib/subscriptionEligibility'
+import { getPlanConfig } from '../lib/planConfig'
 
 export const subscriptionRouter = Router()
 subscriptionRouter.use(requireAuth)
 
-function serialize(sub: NonNullable<Awaited<ReturnType<typeof prisma.subscription.findUnique>>>) {
-  const eligibility = evaluateEligibility(sub)
+async function serialize(sub: NonNullable<Awaited<ReturnType<typeof prisma.subscription.findUnique>>>) {
+  const config = await getPlanConfig(sub.plan as PlanId)
+  const eligibility = evaluateEligibility(sub, config)
   return {
     plan: sub.plan,
     paidWashesRemaining: sub.paidWashesRemaining,
@@ -25,7 +27,7 @@ function serialize(sub: NonNullable<Awaited<ReturnType<typeof prisma.subscriptio
 subscriptionRouter.get('/', async (req: AuthedRequest, res) => {
   const sub = await prisma.subscription.findUnique({ where: { userId: req.userId! } })
   if (!sub) return res.json({ subscription: null })
-  res.json({ subscription: serialize(sub) })
+  res.json({ subscription: await serialize(sub) })
 })
 
 const subscribeSchema = z.object({
@@ -48,7 +50,7 @@ subscriptionRouter.post('/', async (req: AuthedRequest, res) => {
     return res.status(400).json({ error: 'Invalid input', details: parsed.error.flatten() })
   }
   const { plan } = parsed.data
-  const config = PLANS[plan]
+  const config = await getPlanConfig(plan)
 
   const sub = await prisma.subscription.upsert({
     where: { userId: req.userId! },
@@ -69,5 +71,5 @@ subscriptionRouter.post('/', async (req: AuthedRequest, res) => {
     },
   })
 
-  res.status(201).json({ subscription: serialize(sub) })
+  res.status(201).json({ subscription: await serialize(sub) })
 })
