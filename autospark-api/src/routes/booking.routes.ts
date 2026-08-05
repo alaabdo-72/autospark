@@ -18,8 +18,6 @@ import { PlanId } from '../config/plans'
 export const bookingRouter = Router()
 bookingRouter.use(requireAuth)
 
-const ACTIVE_STATUSES = ['confirmed', 'checked_in']
-
 function todayAndTomorrow() {
   // Uses the business's local calendar day (Jordan), not the server
   // process's own timezone — see businessNow() for why that distinction
@@ -41,24 +39,26 @@ const createBookingSchema = z.object({
   waxAdded: z.boolean().optional().default(false),
 })
 
-// A checked-in booking doesn't auto-expire on its own — this lazily marks
-// one "completed" once the wash's actual duration has elapsed since
-// check-in, so it stops blocking the user's next booking and stops
-// showing as their "current" one. There's no background job in this app,
+// Once checked in, the visit is done as far as booking-availability is
+// concerned — it should never block the next booking, so only a
+// still-`confirmed` booking counts as "active" here.
+//
+// A `confirmed` booking that was never checked in doesn't auto-expire on
+// its own either — this lazily marks one "completed" (a no-show) once its
+// turn plus the wash's duration has fully passed, so a forgotten booking
+// doesn't block the user forever. There's no background job in this app,
 // so this runs on every read instead of on a timer.
 async function getActiveBooking(userId: string) {
   const booking = await prisma.booking.findFirst({
-    where: { userId, status: { in: ACTIVE_STATUSES } },
+    where: { userId, status: 'confirmed' },
     orderBy: { createdAt: 'desc' },
   })
   if (!booking) return null
 
-  if (booking.status === 'checked_in' && booking.checkedInAt) {
-    const washDoneAt = booking.checkedInAt.getTime() + WASH_DURATION_MINUTES * 60000
-    if (Date.now() >= washDoneAt) {
-      await prisma.booking.update({ where: { id: booking.id }, data: { status: 'completed' } })
-      return null
-    }
+  const noShowCutoff = booking.estimatedStartAt.getTime() + WASH_DURATION_MINUTES * 60000
+  if (Date.now() >= noShowCutoff) {
+    await prisma.booking.update({ where: { id: booking.id }, data: { status: 'completed' } })
+    return null
   }
 
   return booking
