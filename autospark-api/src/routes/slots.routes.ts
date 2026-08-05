@@ -1,7 +1,8 @@
 import { Router } from 'express'
 import { prisma } from '../db/client'
 import { requireAuth } from '../middleware/requireAuth'
-import { ACTIVE_BAYS, TIME_SLOTS } from '../config/plans'
+import { TIME_SLOTS } from '../config/plans'
+import { getActiveBayNumbers } from '../lib/bays'
 
 export const slotsRouter = Router()
 slotsRouter.use(requireAuth)
@@ -24,9 +25,10 @@ slotsRouter.get('/', async (req, res) => {
     countByTime.set(b.time, (countByTime.get(b.time) ?? 0) + 1)
   }
 
+  const activeBayCount = (await getActiveBayNumbers()).length
   const slots = TIME_SLOTS.map((time) => {
     const reservedCount = countByTime.get(time) ?? 0
-    return { time, reservedCount, isFull: reservedCount >= ACTIVE_BAYS }
+    return { time, reservedCount, isFull: reservedCount >= activeBayCount }
   })
 
   res.json({ date, slots })

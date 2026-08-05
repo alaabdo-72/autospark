@@ -10,6 +10,7 @@ import Subscription from './pages/Subscription'
 import ComingSoon from './pages/ComingSoon'
 import AdminLogin from './pages/AdminLogin'
 import AdminDashboard from './pages/AdminDashboard'
+import AdminBayBoard from './pages/AdminBayBoard'
 import RequireAuth from './components/RequireAuth'
 import RequireAdminAuth from './components/RequireAdminAuth'
 
@@ -67,6 +68,14 @@ export default function App() {
         element={
           <RequireAdminAuth>
             <AdminDashboard />
+          </RequireAdminAuth>
+        }
+      />
+      <Route
+        path="/admin/bays"
+        element={
+          <RequireAdminAuth>
+            <AdminBayBoard />
           </RequireAdminAuth>
         }
       />

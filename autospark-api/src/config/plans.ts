@@ -1,6 +1,5 @@
 export const WAX_PRICE_JD = 4
 export const PAYG_WASH_PRICE_JD = 3.5
-export const ACTIVE_BAYS = 3
 export const CYCLE_MINUTES = 7
 export const BUFFER_SECONDS = 75
 export const POINTS_PER_WASH = 10

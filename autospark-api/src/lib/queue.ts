@@ -1,5 +1,6 @@
 import { prisma } from '../db/client'
-import { ACTIVE_BAYS, BUFFER_SECONDS } from '../config/plans'
+import { BUFFER_SECONDS } from '../config/plans'
+import { getActiveBayNumbers } from './bays'
 
 const ACTIVE_STATUSES = ['confirmed', 'checked_in']
 
@@ -17,8 +18,8 @@ export async function getSlotReservedCount(date: string, time: string) {
 }
 
 export async function isSlotFull(date: string, time: string) {
-  const count = await getSlotReservedCount(date, time)
-  return count >= ACTIVE_BAYS
+  const [count, activeBayNumbers] = await Promise.all([getSlotReservedCount(date, time), getActiveBayNumbers()])
+  return count >= activeBayNumbers.length
 }
 
 export function parseSlotDateTime(date: string, time: string) {
@@ -32,13 +33,25 @@ export function businessNow() {
 }
 
 export async function computeQueueForSlot(date: string, time: string) {
-  const reservedCount = await getSlotReservedCount(date, time)
-  const bayNumber = reservedCount + 1
-  // Each slot has its own dedicated bay capacity (ACTIVE_BAYS per slot), so
-  // there's no additional queueing delay beyond the slot's own start time —
-  // the estimate is anchored to when the customer actually asked to arrive,
-  // not to "now", otherwise a booking for later today or tomorrow would
-  // incorrectly show a ~1 minute wait.
+  const [activeBayNumbers, takenBookings] = await Promise.all([
+    getActiveBayNumbers(),
+    prisma.booking.findMany({
+      where: { date, time, status: { in: ACTIVE_STATUSES } },
+      select: { bayNumber: true },
+    }),
+  ])
+  const takenNumbers = new Set(takenBookings.map((b) => b.bayNumber))
+  const bayNumber = activeBayNumbers.find((n) => !takenNumbers.has(n))
+  if (bayNumber === undefined) {
+    // The caller is expected to have checked isSlotFull() first.
+    throw new Error('computeQueueForSlot called for a slot with no available bay')
+  }
+  const reservedCount = takenBookings.length
+  // Each slot has its own dedicated bay capacity, so there's no additional
+  // queueing delay beyond the slot's own start time — the estimate is
+  // anchored to when the customer actually asked to arrive, not to "now",
+  // otherwise a booking for later today or tomorrow would incorrectly show
+  // a ~1 minute wait.
   const slotStart = parseSlotDateTime(date, time)
   const estimatedStartAt = new Date(slotStart.getTime() + BUFFER_SECONDS * 1000)
   const waitMinutes = Math.max(0, Math.round((estimatedStartAt.getTime() - Date.now()) / 60000))

@@ -7,7 +7,9 @@ import { subscriptionRouter } from './routes/subscription.routes'
 import { bookingRouter } from './routes/booking.routes'
 import { slotsRouter } from './routes/slots.routes'
 import { adminAuthRouter } from './routes/adminAuth.routes'
+import { adminBayRouter } from './routes/adminBay.routes'
 import { ensureBootstrapAdmin } from './lib/adminBootstrap'
+import { ensureBootstrapBays } from './lib/bayBootstrap'
 
 const app = express()
 
@@ -22,6 +24,7 @@ app.use('/subscription', subscriptionRouter)
 app.use('/bookings', bookingRouter)
 app.use('/slots', slotsRouter)
 app.use('/admin/auth', adminAuthRouter)
+app.use('/admin/bays', adminBayRouter)
 
 app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error(err)
@@ -29,8 +32,8 @@ app.use((err: unknown, _req: express.Request, res: express.Response, _next: expr
 })
 
 const port = Number(process.env.PORT ?? 4000)
-ensureBootstrapAdmin()
-  .catch((err) => console.error('Admin bootstrap failed', err))
+Promise.all([ensureBootstrapAdmin(), ensureBootstrapBays()])
+  .catch((err) => console.error('Startup bootstrap failed', err))
   .finally(() => {
     app.listen(port, () => {
       console.log(`AutoSpark API listening on http://localhost:${port}`)
