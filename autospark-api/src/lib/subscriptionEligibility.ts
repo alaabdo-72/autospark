@@ -44,7 +44,9 @@ export function evaluateEligibility(sub: SubscriptionLike, now = Date.now()) {
       : 0
 
   if (plan === 'payg') {
-    canBookPaid = true
+    // No quota to run out of — pay-per-wash — but still gated by the
+    // cooldown like every other plan.
+    canBookPaid = cooldownOk
   } else if (plan === 'monthly') {
     canBookPaid = sub.paidWashesRemaining > 0 && cooldownOk
   } else if (plan === 'yearly') {
@@ -52,7 +54,7 @@ export function evaluateEligibility(sub: SubscriptionLike, now = Date.now()) {
     canBookFree = freeWashAvailable && sub.freeWashesRemaining > 0 && cooldownOk
   }
 
-  const hasBookableQuota = sub.paidWashesRemaining > 0 || freeWashAvailable
+  const hasBookableQuota = plan === 'payg' || sub.paidWashesRemaining > 0 || freeWashAvailable
   if (!cooldownOk && sub.lastWashDate && hasBookableQuota) {
     nextEligibleAt = new Date(sub.lastWashDate.getTime() + config.minDaysBetweenWashes * 86400000)
   }
@@ -64,7 +66,7 @@ export function evaluateEligibility(sub: SubscriptionLike, now = Date.now()) {
 }
 
 export function resolveWashSource(plan: PlanId, canBookPaid: boolean, canBookFree: boolean): 'payg' | 'paid' | 'free' | null {
-  if (plan === 'payg') return 'payg'
+  if (plan === 'payg') return canBookPaid ? 'payg' : null
   if (plan === 'yearly') return canBookFree ? 'free' : canBookPaid ? 'paid' : null
   if (plan === 'monthly') return canBookPaid ? 'paid' : null
   return null

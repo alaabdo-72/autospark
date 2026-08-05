@@ -8,6 +8,7 @@ import {
   PAYG_WASH_PRICE_JD,
   POINTS_PER_WASH,
   TIME_SLOTS,
+  WASH_DURATION_MINUTES,
   WAX_PRICE_JD,
 } from '../config/plans'
 import { businessNow, computeQueueForSlot, isSlotFull, parseSlotDateTime } from '../lib/queue'
@@ -40,11 +41,31 @@ const createBookingSchema = z.object({
   waxAdded: z.boolean().optional().default(false),
 })
 
-bookingRouter.get('/active', async (req: AuthedRequest, res) => {
+// A checked-in booking doesn't auto-expire on its own — this lazily marks
+// one "completed" once the wash's actual duration has elapsed since
+// check-in, so it stops blocking the user's next booking and stops
+// showing as their "current" one. There's no background job in this app,
+// so this runs on every read instead of on a timer.
+async function getActiveBooking(userId: string) {
   const booking = await prisma.booking.findFirst({
-    where: { userId: req.userId!, status: { in: ACTIVE_STATUSES } },
+    where: { userId, status: { in: ACTIVE_STATUSES } },
     orderBy: { createdAt: 'desc' },
   })
+  if (!booking) return null
+
+  if (booking.status === 'checked_in' && booking.checkedInAt) {
+    const washDoneAt = booking.checkedInAt.getTime() + WASH_DURATION_MINUTES * 60000
+    if (Date.now() >= washDoneAt) {
+      await prisma.booking.update({ where: { id: booking.id }, data: { status: 'completed' } })
+      return null
+    }
+  }
+
+  return booking
+}
+
+bookingRouter.get('/active', async (req: AuthedRequest, res) => {
+  const booking = await getActiveBooking(req.userId!)
   res.json({ booking })
 })
 
@@ -69,9 +90,7 @@ bookingRouter.post('/', async (req: AuthedRequest, res) => {
     return res.status(409).json({ error: 'No active subscription' })
   }
 
-  const existingActive = await prisma.booking.findFirst({
-    where: { userId: req.userId!, status: { in: ACTIVE_STATUSES } },
-  })
+  const existingActive = await getActiveBooking(req.userId!)
   if (existingActive) {
     return res.status(409).json({ error: 'You already have an active booking', booking: existingActive })
   }
@@ -126,6 +145,8 @@ bookingRouter.post('/', async (req: AuthedRequest, res) => {
   } else if (washSource === 'free') {
     subUpdate.freeWashesRemaining = { decrement: 1 }
     subUpdate.lastWashDate = new Date()
+  } else if (washSource === 'payg') {
+    subUpdate.lastWashDate = new Date()
   }
   if (waxSource === 'free') {
     subUpdate.freeWaxRemaining = { decrement: 1 }
@@ -166,6 +187,9 @@ bookingRouter.delete('/:id', async (req: AuthedRequest, res) => {
     // applied credit — becomes credit again, per the coupon rule.
     const refund = booking.washPrice + booking.waxPrice
     if (refund > 0) subUpdate.paygCreditJD = { increment: refund }
+    // Only one booking can be active at a time, so this cancellation can
+    // only be undoing the cooldown timer it itself just started.
+    subUpdate.lastWashDate = null
   } else if (booking.washSource === 'paid') {
     subUpdate.paidWashesRemaining = { increment: 1 }
     subUpdate.paidWashesUsed = { decrement: 1 }

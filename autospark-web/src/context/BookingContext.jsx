@@ -46,7 +46,7 @@ export function BookingProvider({ children }) {
   const toggleWax = () => setDraft((d) => ({ ...d, waxAdded: !d.waxAdded }))
 
   const washSource = useMemo(() => {
-    if (plan === 'payg') return 'payg'
+    if (plan === 'payg') return canBookPaid ? 'payg' : null
     if (plan === 'yearly') return canBookFree ? 'free' : canBookPaid ? 'paid' : null
     if (plan === 'monthly') return canBookPaid ? 'paid' : null
     return null

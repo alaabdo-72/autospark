@@ -12,7 +12,8 @@ import PaymentModal from '../components/PaymentModal'
 import { useBooking } from '../context/BookingContext'
 import { useSubscription } from '../context/SubscriptionContext'
 import { PAYG_WASH_PRICE_JD, PLANS } from '../mock/services'
-import { formatDateLabel, toLocalISODate } from '../lib/format'
+import { formatDateLabel, toBusinessISODate } from '../lib/format'
+import { useNow } from '../hooks/useNow'
 
 export default function ScheduleWash() {
   const navigate = useNavigate()
@@ -47,6 +48,7 @@ export default function ScheduleWash() {
   } = useBooking()
   const [showPayment, setShowPayment] = useState(false)
   const [error, setError] = useState(null)
+  const now = useNow(60000)
 
   useEffect(() => {
     if (!subscriptionLoading && !hasActiveSubscription) navigate('/subscription', { replace: true })
@@ -82,10 +84,11 @@ export default function ScheduleWash() {
     doConfirm()
   }
 
-  const isBlocked = plan !== 'payg' && !canBookPaid && !canBookFree
+  const isBlocked = !canBookPaid && !canBookFree
 
   if (isBlocked) {
     const isCadenceBlocked = Boolean(nextEligibleAt)
+    const daysRemaining = isCadenceBlocked ? Math.max(1, Math.ceil((nextEligibleAt.getTime() - now) / 86400000)) : 0
     return (
       <div className="app-shell">
         <AppHeader title="Schedule a Wash" subtitle="Book your next visit in seconds" />
@@ -93,11 +96,23 @@ export default function ScheduleWash() {
           <p className="text-lg font-semibold text-brand-950">
             {isCadenceBlocked ? 'Not Yet Available' : 'No Washes Remaining'}
           </p>
-          <p className="text-sm text-slate-500 mt-2 max-w-xs">
-            {isCadenceBlocked
-              ? `Your next wash can be booked on ${formatDateLabel(toLocalISODate(nextEligibleAt))}.`
-              : "You've used all the washes in your current plan. Upgrade or wait for your plan to renew."}
-          </p>
+          {isCadenceBlocked ? (
+            <>
+              <p className="text-6xl font-bold text-brand-600 mt-4">
+                {daysRemaining}
+                <span className="text-2xl font-semibold text-brand-400 ml-2">
+                  {daysRemaining === 1 ? 'day' : 'days'}
+                </span>
+              </p>
+              <p className="text-sm text-slate-500 mt-3 max-w-xs">
+                until your next booking — available {formatDateLabel(toBusinessISODate(nextEligibleAt))}.
+              </p>
+            </>
+          ) : (
+            <p className="text-sm text-slate-500 mt-2 max-w-xs">
+              You've used all the washes in your current plan. Upgrade or wait for your plan to renew.
+            </p>
+          )}
           <button
             type="button"
             onClick={() => navigate('/subscription')}

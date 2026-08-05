@@ -26,7 +26,7 @@ export const PLANS: Record<
     washesIncluded: 0,
     freeWashesIncluded: 0,
     freeWaxIncluded: 0,
-    minDaysBetweenWashes: 0,
+    minDaysBetweenWashes: 3,
     freePerkUnlockAfterPaidWashes: 0,
   },
   monthly: {
@@ -69,3 +69,5 @@ export const BASIC_WASH = {
   exteriorMinutes: 7,
   interiorMinutes: 8,
 }
+
+export const WASH_DURATION_MINUTES = BASIC_WASH.exteriorMinutes + BASIC_WASH.interiorMinutes
